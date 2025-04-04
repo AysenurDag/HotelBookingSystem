@@ -136,19 +136,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/nigar/.nuget/packages/": {}
+    "/Users/busecoban/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/nigar/Desktop/Hotel Management/HotelBookingSystem/Send/Send.csproj",
+      "projectUniqueName": "/Users/busecoban/Desktop/HotelBookingSystem/Send/Send.csproj",
       "projectName": "Send",
-      "projectPath": "/Users/nigar/Desktop/Hotel Management/HotelBookingSystem/Send/Send.csproj",
-      "packagesPath": "/Users/nigar/.nuget/packages/",
-      "outputPath": "/Users/nigar/Desktop/Hotel Management/HotelBookingSystem/Send/obj/",
+      "projectPath": "/Users/busecoban/Desktop/HotelBookingSystem/Send/Send.csproj",
+      "packagesPath": "/Users/busecoban/.nuget/packages/",
+      "outputPath": "/Users/busecoban/Desktop/HotelBookingSystem/Send/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/nigar/.nuget/NuGet/NuGet.Config"
+        "/Users/busecoban/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -198,7 +198,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

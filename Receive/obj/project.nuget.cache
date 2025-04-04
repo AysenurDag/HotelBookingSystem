@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "viOlJ0beNYo=",
+  "dgSpecHash": "giA5WK7l92s=",
   "success": true,
-  "projectFilePath": "/Users/nigar/Desktop/Hotel Management/HotelBookingSystem/Receive/Receive.csproj",
+  "projectFilePath": "/Users/busecoban/Desktop/HotelBookingSystem/Receive/Receive.csproj",
   "expectedPackageFiles": [
-    "/Users/nigar/.nuget/packages/rabbitmq.client/7.1.2/rabbitmq.client.7.1.2.nupkg.sha512",
-    "/Users/nigar/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
-    "/Users/nigar/.nuget/packages/system.threading.ratelimiting/8.0.0/system.threading.ratelimiting.8.0.0.nupkg.sha512"
+    "/Users/busecoban/.nuget/packages/rabbitmq.client/7.1.2/rabbitmq.client.7.1.2.nupkg.sha512",
+    "/Users/busecoban/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
+    "/Users/busecoban/.nuget/packages/system.threading.ratelimiting/8.0.0/system.threading.ratelimiting.8.0.0.nupkg.sha512"
   ],
   "logs": []
 }
