@@ -37,18 +37,6 @@ I implemented a test **SAGA pattern** for handling the **ReservationCreatedEvent
 
 ---
 
-## Docker & MySQL Setup
-
-- **MySQL** container has been set up with:
-
-  - Database: `booking_db`
-  - Username: `root`
-  - Password: `123456`
-
-- **RabbitMQ** container has been set up for event messaging between services.
-
----
-
 ## Testing with Curl
 
 To simulate the `ReservationCreatedEvent`, you can use the following **`curl`** commands to send HTTP requests:
