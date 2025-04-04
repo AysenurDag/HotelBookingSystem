@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("buse-reservation-consumer-test")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+64b8ab82159dd5bf4a2aff98523c9663811825f0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae360b4db0e6872af16108de2e44a78f8fc60350")]
 [assembly: System.Reflection.AssemblyProductAttribute("buse-reservation-consumer-test")]
 [assembly: System.Reflection.AssemblyTitleAttribute("buse-reservation-consumer-test")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
