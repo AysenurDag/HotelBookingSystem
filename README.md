@@ -16,6 +16,9 @@ I implemented a test **SAGA pattern** for handling the **ReservationCreatedEvent
 
 ### 1. **ReservationCreatedEvent Handling**:
 
+Aggregate - Reservation
+Domain Event - ReservationCreatedEvent
+
 - Implemented a test **SAGA pattern** for handling `ReservationCreatedEvent` in the `Booking Service`.
 - Upon receiving the event, a **payment simulation** is triggered.
 - The payment simulation has a 50% chance of success or failure. Based on the result:
