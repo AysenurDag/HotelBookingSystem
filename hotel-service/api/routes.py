@@ -13,6 +13,7 @@ api_blueprint.register_blueprint(room_routes, url_prefix='/rooms')
 def health_check():
     return {"status": "ok", "service": "hotel-service"}
 
-@api_blueprint.route('/')
-def hello():
-    return "Hello, World!"
+# Health check endpoint
+@api_blueprint.route('/', methods=['GET'])
+def check():
+    return {"status": "ok"}
