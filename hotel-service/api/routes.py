@@ -12,3 +12,7 @@ api_blueprint.register_blueprint(room_routes, url_prefix='/rooms')
 @api_blueprint.route('/health', methods=['GET'])
 def health_check():
     return {"status": "ok", "service": "hotel-service"}
+
+@api_blueprint.route('/')
+def hello():
+    return "Hello, World!"

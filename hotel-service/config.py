@@ -6,7 +6,6 @@ load_dotenv()
 class Config:
     DEBUG = False
     MONGO_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/hotel_db')
-    RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
 
 class DevelopmentConfig(Config):
     DEBUG = True
