@@ -3,6 +3,8 @@ from flask import current_app, g
 from bson.objectid import ObjectId
 from datetime import datetime
 from services.messaging import publish_message
+from database import mongo  
+
 
 class RoomService:
     def __init__(self):
@@ -10,9 +12,7 @@ class RoomService:
         
     @property
     def db(self):
-        if 'mongo' not in g:
-            g.mongo = PyMongo(current_app).db
-        return g.mongo
+        return mongo.db
     
     def get_rooms(self, filters=None, page=1, per_page=20):
         filters = filters or {}
