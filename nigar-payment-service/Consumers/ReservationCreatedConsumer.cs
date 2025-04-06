@@ -1,12 +1,10 @@
 using System.Text;
 using System.Text.Json;
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using nigar_payment_service.Models; 
-using nigar_payment_service.Services;
+using nigar_payment_service.Models;
+using nigar_payment_service.Aggregates;
 
 namespace PaymentService.Consumers
 {
@@ -17,7 +15,7 @@ namespace PaymentService.Consumers
 
         public ReservationCreatedConsumer()
         {
-            var factory = new ConnectionFactory() { HostName = "10.47.7.151",  Port = 5672 }; // RabbitMQ host
+            var factory = new ConnectionFactory() { HostName = "10.47.7.151", Port = 5672 };
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
@@ -38,20 +36,40 @@ namespace PaymentService.Consumers
                 var message = Encoding.UTF8.GetString(body);
                 var reservation = JsonSerializer.Deserialize<ReservationCreatedEvent>(message);
 
-                Console.WriteLine($"📩 ReservationReceived: ID {reservation.Id}, Hotel: {reservation.HotelId}");
-
-                // Simulate payment process
-                bool paymentSuccess = SimulatePayment(reservation);
-
-                if (paymentSuccess)
+                if (reservation != null)
                 {
-                    Console.WriteLine("✅ Payment successful");
-                    // Publish PaymentSucceededEvent
-                }
-                else
-                {
-                    Console.WriteLine("❌ Payment failed");
-                    // Publish PaymentFailedEvent
+                    Console.WriteLine($"📩 ReservationReceived: ID {reservation.Id}, Hotel: {reservation.HotelId}");
+
+                    var aggregate = new PaymentAggregate(reservation.Id, reservation.UserId, reservation.HotelId);
+                    bool paymentSuccess = SimulatePayment(reservation);
+
+                    if (paymentSuccess)
+                    {
+                        aggregate.MarkAsSucceeded();
+                        Console.WriteLine("✅ Payment successful");
+
+                        var successEvent = new PaymentSucceededEvent
+                        {
+                            ReservationId = aggregate.ReservationId,
+                            UserId = aggregate.UserId,
+                            HotelId = aggregate.HotelId
+                        };
+
+                        PublishEvent(successEvent, "payment_succeeded");
+                    }
+                    else
+                    {
+                        aggregate.MarkAsFailed();
+                        Console.WriteLine("❌ Payment failed");
+
+                        var failedEvent = new PaymentFailedEvent
+                        {
+                            ReservationId = aggregate.ReservationId,
+                            Reason = "Payment processing failed"
+                        };
+
+                        PublishEvent(failedEvent, "payment_failed");
+                    }
                 }
             };
 
@@ -61,8 +79,26 @@ namespace PaymentService.Consumers
 
         private bool SimulatePayment(ReservationCreatedEvent reservation)
         {
-            // Gerçek işlem yerine rastgele ödeme sonucu üret
             return new Random().Next(0, 2) == 1;
+        }
+
+        private void PublishEvent<T>(T @event, string queueName)
+        {
+            var json = JsonSerializer.Serialize(@event);
+            var body = Encoding.UTF8.GetBytes(json);
+
+            _channel.QueueDeclare(queue: queueName,
+                                 durable: true,
+                                 exclusive: false,
+                                 autoDelete: false,
+                                 arguments: null);
+
+            _channel.BasicPublish(exchange: "",
+                                 routingKey: queueName,
+                                 basicProperties: null,
+                                 body: body);
+
+            Console.WriteLine($"📤 Event published to {queueName}: {json}");
         }
     }
 }
