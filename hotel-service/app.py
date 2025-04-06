@@ -1,9 +1,12 @@
 from flask import Flask
-from flask_pymongo import PyMongo
 from api.routes import api_blueprint
 import os
 import logging
 from config import config
+from database import mongo, init_db
+
+# Create a global mongo variable
+mongo = None
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -16,8 +19,8 @@ def create_app(config_name='default'):
     )
     
     # Initialize MongoDB
-    PyMongo(app)
-    
+    init_db(app)
+
     # Register blueprints
     app.register_blueprint(api_blueprint, url_prefix='/api')
     

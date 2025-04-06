@@ -3,6 +3,7 @@ from flask import current_app, g
 from bson.objectid import ObjectId
 from datetime import datetime
 from services.messaging import publish_message
+from database import mongo  
 
 class HotelService:
     def __init__(self):
@@ -10,9 +11,7 @@ class HotelService:
         
     @property
     def db(self):
-        if 'mongo' not in g:
-            g.mongo = PyMongo(current_app).db
-        return g.mongo
+        return mongo.db
     
     def get_hotels(self, filters=None, page=1, per_page=10):
         filters = filters or {}
