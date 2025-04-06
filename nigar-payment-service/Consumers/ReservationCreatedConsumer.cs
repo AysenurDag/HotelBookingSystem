@@ -41,12 +41,15 @@ namespace PaymentService.Consumers
                     Console.WriteLine($"📩 ReservationReceived: ID {reservation.Id}, Hotel: {reservation.HotelId}");
 
                     var aggregate = new PaymentAggregate(reservation.Id, reservation.UserId, reservation.HotelId);
+
+                    Console.WriteLine($"💳 Processing payment for User: {reservation.UserId}, Hotel: {reservation.HotelId}");
+
                     bool paymentSuccess = SimulatePayment(reservation);
 
                     if (paymentSuccess)
                     {
                         aggregate.MarkAsSucceeded();
-                        Console.WriteLine("✅ Payment successful");
+                        Console.WriteLine("✅ Payment successful for reservation ID: {reservation.Id}");
 
                         var successEvent = new PaymentSucceededEvent
                         {
@@ -60,7 +63,7 @@ namespace PaymentService.Consumers
                     else
                     {
                         aggregate.MarkAsFailed();
-                        Console.WriteLine("❌ Payment failed");
+                        Console.WriteLine("❌ Payment failed for reservation ID: {reservation.Id}");
 
                         var failedEvent = new PaymentFailedEvent
                         {
