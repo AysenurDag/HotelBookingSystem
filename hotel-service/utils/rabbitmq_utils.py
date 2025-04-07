@@ -16,7 +16,7 @@ def get_rabbitmq_connection():
     """Create and return a connection to RabbitMQ."""
     try:
         # Get connection parameters from environment variables with defaults
-        host = os.getenv('RABBITMQ_HOST', 'localhost')
+        host = os.getenv('RABBITMQ_HOST', '10.47.7.151')
         port = int(os.getenv('RABBITMQ_PORT', '5672'))
         username = os.getenv('RABBITMQ_USERNAME', 'guest')
         password = os.getenv('RABBITMQ_PASSWORD', 'guest')
