@@ -2,6 +2,10 @@
 using auth_user_service.Messaging;
 using auth_user_service.Models;
 using auth_user_service.Sagas;
+using Microsoft.AspNetCore.Mvc;
+using auth_user_service.DTOs;
+
+
 
 namespace auth_user_service.Controllers
 {
@@ -25,7 +29,7 @@ namespace auth_user_service.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Domain event’in yanı sıra saga’yı da çalıştırın
+            // saga’yı da çalıştır
             var saga = new UserRegistrationSaga(_messagePublisher);
             await saga.ExecuteSaga(user);
 

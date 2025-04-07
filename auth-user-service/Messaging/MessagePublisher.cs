@@ -1,4 +1,8 @@
-﻿namespace auth_user_service.Messaging
+﻿using RabbitMQ.Client;
+using System.Text;
+
+
+namespace auth_user_service.Messaging
 {
     public class MessagePublisher
     {
@@ -7,7 +11,7 @@
 
         public MessagePublisher()
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = "10.47.7.151" };
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
             _channel.QueueDeclare(queue: "userQueue", durable: false, exclusive: false, autoDelete: false);

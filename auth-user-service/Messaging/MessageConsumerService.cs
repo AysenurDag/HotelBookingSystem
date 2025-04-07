@@ -1,4 +1,10 @@
-﻿namespace auth_user_service.Messaging
+﻿using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Text;
+
+
+namespace auth_user_service.Messaging
+
 {
     public class MessageConsumerService : BackgroundService
     {
@@ -7,7 +13,7 @@
 
         public MessageConsumerService()
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = "10.47.7.151" };
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
             _channel.QueueDeclare(queue: "userQueue", durable: false, exclusive: false, autoDelete: false);
@@ -20,7 +26,6 @@
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                // Mesaj alındığında yapılacak işlemler
                 Console.WriteLine($"Received message: {message}");
             };
 

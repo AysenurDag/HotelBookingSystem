@@ -1,4 +1,5 @@
 ﻿using auth_user_service.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace auth_user_service.Data
 {

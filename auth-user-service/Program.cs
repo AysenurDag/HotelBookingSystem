@@ -1,5 +1,7 @@
 ﻿using auth_user_service.Data;
 using auth_user_service.Messaging;
+using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,14 +22,15 @@ builder.Services.AddHostedService<MessageConsumerService>();
 // Controller tabanlı API kullanıyorsanız, controller'ları ekleyin
 builder.Services.AddControllers();
 
+var producer = new MessageProducerService();
+producer.SendMessage("Merhaba, bu bir test mesajıdır!");
+producer.Close();
+
+
 var app = builder.Build();
 
-// Geliştirme ortamında Swagger arayüzünü etkinleştiriyoruz
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
