@@ -1,58 +1,66 @@
 # HotelBookingSystem
-Authentication Service
+This project implements a hotel management system using a microservices-based architecture. The system is designed to manage hotel listings, room bookings, user authentication, and payments with strong consistency and failure recovery using the Saga Pattern.
 
-UserAggregate: Manages user profiles, credentials, and authentication tokens
+---
 
-Hotel Service
+## 🧩 Services Overview
 
-HotelAggregate: Hotel details, amenities, location, ratings, and policies
-RoomTypeAggregate: Room categories, features, base pricing, and images
-RoomInventoryAggregate: Available rooms by date range, pricing rules, and availability status
+### 🔐 Authentication Service
+- **UserAggregate**: Manages user profiles, credentials, and authentication tokens.
 
-Booking Service
+---
 
-BookingAggregate: Reservation details, guest information, status (confirmed, pending, canceled), and booking history
-ReservationAggregate: Room allocation, check-in/check-out dates, and special requests
+### 🏨 Hotel Service
+- **HotelAggregate**: Contains hotel details, amenities, location, ratings, and policies.
+- **RoomTypeAggregate**: Manages room categories, features, base pricing, and images.
+- **RoomInventoryAggregate**: Handles available rooms by date range, pricing rules, and availability status.
 
-Payment Service
+---
 
-PaymentAggregate: Payment details, status, transaction history, and refund information
-InvoiceAggregate: Itemized charges, taxes, discounts, and final pricing
+### 📆 Booking Service
+- **BookingAggregate**: Stores reservation details, guest information, booking status (confirmed, pending, canceled), and booking history.
+- **ReservationAggregate**: Manages room allocation, check-in/check-out dates, and special requests.
 
-Booking Saga Steps
+---
 
-Initiate Booking (Booking Service)
+### 💳 Payment Service
+- **PaymentAggregate**: Tracks payment details, payment status, transaction history, and refund information.
+- **InvoiceAggregate**: Contains itemized charges, taxes, discounts, and final pricing.
 
-User selects room and dates
-Booking service creates a pending booking record
+---
 
+## 🔁 Booking Saga Flow
 
-Verify Room Availability (Hotel Service)
+The **Saga Pattern** is used to handle distributed transactions across services with compensation logic for failure scenarios.
 
-Booking service requests room availability check
-Hotel service verifies and temporarily reserves the room
-Compensation: Release room reservation if booking fails
+### Step 1: Initiate Booking (Booking Service)
+- User selects room and dates.
+- Booking service creates a **pending booking record**.
 
+### Step 2: Verify Room Availability (Hotel Service)
+- Booking service requests room availability check.
+- Hotel service verifies and **temporarily reserves** the room.
 
-Process Payment (Payment Service)
+🛑 **Compensation**: If the booking fails, release the room reservation.
 
-Booking service requests payment processing
-Payment service authorizes payment
-Compensation: Refund/void payment if booking fails later
+### Step 3: Process Payment (Payment Service)
+- Booking service sends a request to process the payment.
+- Payment service **authorizes the payment**.
 
+🛑 **Compensation**: If the booking fails later, the payment is **voided or refunded**.
 
-Confirm Booking (Booking Service)
+### Step 4: Confirm Booking (Booking Service)
+- Upon successful payment:
+  - Booking service **confirms the reservation**.
+  - Hotel service **updates room inventory**.
+  - Payment service **captures the authorized payment**.
+  - Booking service **sends confirmation** to the user.
 
-Upon successful payment, booking service confirms reservation
-Hotel service updates room inventory
-Payment service captures the authorized payment
-Booking service sends confirmation to user
+---
 
-
-Handle Failures
-
-Each step includes compensation logic
-Saga orchestrator tracks progress and triggers compensations when needed
+## ⚠️ Failure Handling
+- Each step of the saga includes **compensation logic** to maintain system consistency.
+- A **Saga Orchestrator** tracks the process and triggers compensating actions when necessary.
 
 ## Ozge's notes
 
