@@ -1,23 +1,30 @@
 using nigar_payment_service.Services;
+using RabbitMQ.Client;
+using PaymentService.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
-
-
-
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHostedService<PaymentProcessor>(); 
-//builder.Services.AddHostedService<ReservationCreatedConsumer>();
+// Arka planda çalışan servis
+builder.Services.AddHostedService<ReservationCreatedConsumer>();
 
+// RabbitMQ bağlantısı
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+{
+    return new ConnectionFactory()
+    {
+        HostName = "10.47.7.151",
+        Port = 5672,
+        UserName = "guest",
+        Password = "guest",
+        DispatchConsumersAsync = true
+    };
+});
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -29,5 +36,3 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapGet("/", () => "💳 Payment Service is running!");
 app.Run();
-
-

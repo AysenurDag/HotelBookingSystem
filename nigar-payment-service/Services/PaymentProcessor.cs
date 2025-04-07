@@ -27,16 +27,16 @@ public class PaymentProcessor : BackgroundService
             var message = Encoding.UTF8.GetString(body);
             var reservation = JsonSerializer.Deserialize<ReservationCreatedEvent>(message);
 
-            Console.WriteLine($"📩 ReservationCreatedEvent received. Reservation ID: {reservation.Id}");
+            Console.WriteLine($"📩 ReservationCreatedEvent received. Reservation ID: {reservation.ReservationId}");
 
             var success = new Random().Next(0, 2) == 0;
 
             if (success)
             {
-                Console.WriteLine($"💳 Payment succeeded for Reservation ID: {reservation.Id}");
+                Console.WriteLine($"💳 Payment succeeded for Reservation ID: {reservation.ReservationId}");
                 var successEvent = new PaymentSucceededEvent
                 {
-                    ReservationId = reservation.Id,
+                    ReservationId = reservation.ReservationId,
                     UserId = reservation.UserId,
                     HotelId = reservation.HotelId
                 };
@@ -44,10 +44,10 @@ public class PaymentProcessor : BackgroundService
             }
             else
             {
-                Console.WriteLine($"❌ Payment failed for Reservation ID: {reservation.Id}");
+                Console.WriteLine($"❌ Payment failed for Reservation ID: {reservation.ReservationId}");
                 var failedEvent = new PaymentFailedEvent
                 {
-                    ReservationId = reservation.Id,
+                    ReservationId = reservation.ReservationId,
                     Reason = "Card declined"
                 };
                 PublishEvent(failedEvent, "payment_failed", channel);
