@@ -1,7 +1,60 @@
 # HotelBookingSystem
 
 ## Ozge's notes
+Authentication Service
 
+UserAggregate: Manages user profiles, credentials, and authentication tokens
+
+Hotel Service
+
+HotelAggregate: Hotel details, amenities, location, ratings, and policies
+RoomTypeAggregate: Room categories, features, base pricing, and images
+RoomInventoryAggregate: Available rooms by date range, pricing rules, and availability status
+
+Booking Service
+
+BookingAggregate: Reservation details, guest information, status (confirmed, pending, canceled), and booking history
+ReservationAggregate: Room allocation, check-in/check-out dates, and special requests
+
+Payment Service
+
+PaymentAggregate: Payment details, status, transaction history, and refund information
+InvoiceAggregate: Itemized charges, taxes, discounts, and final pricing
+
+Booking Saga Steps
+
+Initiate Booking (Booking Service)
+
+User selects room and dates
+Booking service creates a pending booking record
+
+
+Verify Room Availability (Hotel Service)
+
+Booking service requests room availability check
+Hotel service verifies and temporarily reserves the room
+Compensation: Release room reservation if booking fails
+
+
+Process Payment (Payment Service)
+
+Booking service requests payment processing
+Payment service authorizes payment
+Compensation: Refund/void payment if booking fails later
+
+
+Confirm Booking (Booking Service)
+
+Upon successful payment, booking service confirms reservation
+Hotel service updates room inventory
+Payment service captures the authorized payment
+Booking service sends confirmation to user
+
+
+Handle Failures
+
+Each step includes compensation logic
+Saga orchestrator tracks progress and triggers compensations when needed
 ## Aysenur's notes
 
 ## Nıgar's notes
