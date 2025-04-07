@@ -1,6 +1,4 @@
 # HotelBookingSystem
-
-## Ozge's notes
 Authentication Service
 
 UserAggregate: Manages user profiles, credentials, and authentication tokens
@@ -56,6 +54,7 @@ Handle Failures
 Each step includes compensation logic
 Saga orchestrator tracks progress and triggers compensations when needed
 
+## Ozge's notes
 
 ## Aysenur's notes
 
