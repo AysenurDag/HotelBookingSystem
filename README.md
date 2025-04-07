@@ -56,22 +56,7 @@ Handle Failures
 Each step includes compensation logic
 Saga orchestrator tracks progress and triggers compensations when needed
 
-**Service Interactions Diagram**
 
-┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│             │      │             │      │             │
-│  Booking    │<─────│    Hotel    │      │  Payment    │
-│  Service    │─────>│   Service   │      │  Service    │
-│             │      │             │      │             │
-└─────┬───────┘      └─────────────┘      └─────┬───────┘
-      │                                         │
-      │                                         │
-      └─────────────────┬─────────────────────┐│
-                        │                     ││
-                ┌───────▼───────┐      ┌──────▼───────┐
-                │  Booking Saga  │<─────│ Payment      │
-                │  Orchestrator  │─────>│ Processing   │
-                └───────────────┘      └──────────────┘
 ## Aysenur's notes
 
 ## Nıgar's notes
