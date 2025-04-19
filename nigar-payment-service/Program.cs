@@ -1,40 +1,36 @@
 using Microsoft.EntityFrameworkCore;
+using nigar_payment_service.Consumers;
 using nigar_payment_service.DbContext;
 using RabbitMQ.Client;
-using PaymentService.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-
-
+//  EF Core
 builder.Services.AddDbContext<PaymentDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+//  RabbitMQ ConnectionFactory 
+builder.Services.AddSingleton<IConnectionFactory>(_ =>
+    new ConnectionFactory
+    {
+        HostName            = "10.47.7.151",
+        Port                = 5672,
+        UserName            = "guest",
+        Password            = "guest",
+        DispatchConsumersAsync = true
+    });
+
+// Hosted Service (consumer)
 builder.Services.AddHostedService<ReservationCreatedConsumer>();
 
 
-// RabbitMQ bağlantısı
-builder.Services.AddSingleton<IConnectionFactory>(sp =>
-{
-    return new ConnectionFactory()
-    {
-        HostName = "10.47.7.151",
-        Port = 5672,
-        UserName = "guest",
-        Password = "guest",
-        DispatchConsumersAsync = true
-    };
-});
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -42,5 +38,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+
+app.MapControllers();
+
+// Optional health‐check or root
 app.MapGet("/", () => "💳 Payment Service is running!");
+
 app.Run();
