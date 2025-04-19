@@ -1,4 +1,4 @@
-namespace nigar_payment_service.Models;
+namespace nigar_payment_service.Events;
 
 public class PaymentSucceededEvent
     {

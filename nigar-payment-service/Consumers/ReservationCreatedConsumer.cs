@@ -3,8 +3,9 @@ using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using nigar_payment_service.Models;
+using nigar_payment_service.Events;
 using nigar_payment_service.Aggregates;
+using nigar_payment_service.Models;
 
 namespace PaymentService.Consumers
 {

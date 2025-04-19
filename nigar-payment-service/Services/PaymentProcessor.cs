@@ -2,7 +2,8 @@ using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using nigar_payment_service.Models;  
+using nigar_payment_service.Events;
+using nigar_payment_service.Models;
 using nigar_payment_service.Services;
 
 

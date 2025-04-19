@@ -1,4 +1,5 @@
-using nigar_payment_service.Services;
+using Microsoft.EntityFrameworkCore;
+using nigar_payment_service.DbContext;
 using RabbitMQ.Client;
 using PaymentService.Consumers;
 
@@ -8,8 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Arka planda çalışan servis
+
+
+builder.Services.AddDbContext<PaymentDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
 builder.Services.AddHostedService<ReservationCreatedConsumer>();
+
 
 // RabbitMQ bağlantısı
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
