@@ -1,143 +1,161 @@
+using System;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using nigar_payment_service.DbContext;
 using nigar_payment_service.Events;
-using nigar_payment_service.Aggregates;
 using nigar_payment_service.Models;
+ 
 
-namespace PaymentService.Consumers
+namespace nigar_payment_service.Consumers
 {
     public class ReservationCreatedConsumer : BackgroundService
     {
-        private readonly IModel _channel;
-        private readonly IConnection _connection;
+        private readonly IConnectionFactory _factory;
+        private readonly IServiceProvider _services;
+        private const string QueueName = "reservation_created";
 
-        public ReservationCreatedConsumer()
+        public ReservationCreatedConsumer(IConnectionFactory factory, IServiceProvider services)
         {
-            var factory = new ConnectionFactory() { HostName = "10.47.7.151", Port = 5672 };
-            try
-            {
-                _connection = factory.CreateConnection();
-                _channel = _connection.CreateModel();
-                Console.WriteLine("✅ RabbitMQ connection established.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error connecting to RabbitMQ: {ex.Message}");
-            }
-
-            _channel.QueueDeclare(queue: "reservationQueue",
-                                 durable: true,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
+            _factory = factory;
+            _services = services;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var consumer = new EventingBasicConsumer(_channel);
+            IConnection connection = null!;
+            IModel channel = null!;
 
-            consumer.Received += (model, ea) =>
+            // Retry loop until RabbitMQ is reachable
+            while (!stoppingToken.IsCancellationRequested)
             {
-                // Stopping token check to allow cancellation of the operation
-                if (stoppingToken.IsCancellationRequested)
+                try
                 {
+                    connection = _factory.CreateConnection();
+                    channel = connection.CreateModel();
+                    channel.QueueDeclare(
+                        queue: QueueName,
+                        durable: true,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null);
+                    Console.WriteLine($"✅ Connected to RabbitMQ and declared queue '{QueueName}'");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ RabbitMQ connection failed: {ex.Message}. Retrying in 5s...");
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                }
+            }
+
+            if (channel == null)
+                return;
+
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += async (model, ea) =>
+            {
+                if (stoppingToken.IsCancellationRequested)
+                    return;
+
+                var body = ea.Body.ToArray();
+                var msg = Encoding.UTF8.GetString(body);
+                var reservation = JsonSerializer.Deserialize<ReservationCreatedEvent>(msg);
+                if (reservation == null)
+                {
+                    Console.WriteLine("❌ Invalid ReservationCreatedEvent message.");
+                    channel.BasicAck(ea.DeliveryTag, false);
                     return;
                 }
 
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                var reservation = JsonSerializer.Deserialize<ReservationCreatedEvent>(message);
-                if (reservation == null)
+                Console.WriteLine($"📩 Received reservationEvent: {msg}");
+
+                using var scope = _services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+
+                // Create and save Payment record
+                var payment = new Payment
                 {
-                    Console.WriteLine("❌ Failed to deserialize reservation message.");
-                }
-                if (reservation != null)
+                    ReservationId = reservation.ReservationId,
+                    CustomerId = reservation.UserId,
+                    Amount = CalculateAmount(reservation),
+                    Status = PaymentStatus.Pending,
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.Payments.Add(payment);
+                await db.SaveChangesAsync();
+
+                // Simulate outcome
+                bool success = new Random().Next(0, 2) == 1;
+                payment.Status = success ? PaymentStatus.Success : PaymentStatus.Failed;
+                if (!success)
+                    payment.FailureReason = "Simulated failure";
+                await db.SaveChangesAsync();
+
+                // Publish result
+                if (success)
                 {
-                    Console.WriteLine($"📩 ReservationReceived: ID {reservation.ReservationId}, Hotel: {reservation.HotelId}");
-
-                    var aggregate = new PaymentAggregate(reservation.ReservationId, reservation.UserId, reservation.HotelId);
-
-                    Console.WriteLine($"💳 Processing payment for User: {reservation.UserId}, Hotel: {reservation.HotelId}");
-
-                    bool paymentSuccess = SimulatePayment(reservation);
-
-                    if (paymentSuccess)
+                    var evt = new PaymentSucceededEvent
                     {
-                        aggregate.MarkAsSucceeded();
-                        Console.WriteLine($"✅ Payment successful for reservation ID: {reservation.ReservationId}");
-
-                        var successEvent = new PaymentSucceededEvent
-                        {
-                            ReservationId = aggregate.ReservationId,
-                            UserId = aggregate.UserId,
-                            HotelId = aggregate.HotelId
-                        };
-
-                        PublishEvent(successEvent, "payment_succeeded");
-                    }
-                    else
-                    {
-                        aggregate.MarkAsFailed();
-                        Console.WriteLine($"❌ Payment failed for reservation ID: {reservation.ReservationId}");
-
-                        var failedEvent = new PaymentFailedEvent
-                        {
-                            ReservationId = aggregate.ReservationId,
-                            Reason = "Payment processing failed"
-                        };
-
-                        PublishEvent(failedEvent, "payment_failed"); 
-                    }
-
-                    // Manually acknowledge the message after processing
-                    _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                        ReservationId = reservation.ReservationId,
+                        PaymentId = payment.Id
+                    };
+                    PublishEvent(channel, "payment_succeeded", evt);
                 }
+                else
+                {
+                    var evt = new PaymentFailedEvent
+                    {
+                        ReservationId = reservation.ReservationId,
+                        PaymentId = payment.Id,
+                        Reason = payment.FailureReason!
+                    };
+                    PublishEvent(channel, "payment_failed", evt);
+                }
+
+                channel.BasicAck(ea.DeliveryTag, false);
             };
 
-            // Change autoAck to false to manually acknowledge the message
-            _channel.BasicConsume(queue: "reservationQueue", autoAck: false, consumer: consumer);
+            channel.BasicConsume(queue: QueueName, autoAck: false, consumer: consumer);
 
-            return Task.CompletedTask;
+            // Keep the background task alive until cancelled
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
 
-        private bool SimulatePayment(ReservationCreatedEvent reservation)
+        private decimal CalculateAmount(ReservationCreatedEvent reservation)
         {
-            // Simulating payment with 50% chance of success
-            bool success = new Random().Next(0, 2) == 1;
-            Console.WriteLine($"🔑 Simulated payment result: {(success ? "Success" : "Failure")}");
-            return success;
+            // TODO: implement real pricing
+            return 100m;
         }
-        private void PublishEvent<T>(T @event, string queueName)
+
+        private void PublishEvent<T>(IModel channel, string queue, T message)
         {
-            var json = JsonSerializer.Serialize(@event); // Olayı JSON formatına dönüştürme
-            var body = Encoding.UTF8.GetBytes(json); // JSON verisini byte dizisine çevirme
+            var json = JsonSerializer.Serialize(message);
+            var body = Encoding.UTF8.GetBytes(json);
 
-            // Kuyruğu tanımla, kuyruğun özellikleri burada ayarlanıyor
-            _channel.QueueDeclare(queue: queueName,
-                durable: true,    // Kuyruk kalıcı olacak şekilde ayarlanıyor
-                exclusive: false, 
-                autoDelete: false, 
-                arguments: null); 
+            channel.QueueDeclare(
+                queue: queue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
 
-            // Olayı RabbitMQ kuyruğuna gönderme
-            _channel.BasicPublish(exchange: "",
-                routingKey: queueName,  // Kuyruk adı burada kullanılıyor
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: queue,
                 basicProperties: null,
                 body: body);
 
-            // Olayın başarıyla yayımlandığını loglama
-            Console.WriteLine($"📤 Event published to {queueName}: {json}");
+            Console.WriteLine($"📤 Published '{queue}' event: {json}");
         }
 
-
-        // Clean up the resources when the service stops
         public override void Dispose()
         {
-            _channel.Close();
-            _connection.Close();
             base.Dispose();
         }
     }
