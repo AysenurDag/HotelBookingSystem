@@ -2,8 +2,9 @@ from flask_pymongo import PyMongo
 from flask import current_app, g
 from bson.objectid import ObjectId
 from datetime import datetime
-from services.messaging import publish_message
-from database import mongo  
+
+from database import mongo
+from rabbitmq_utils import publish_message  
 
 class HotelService:
     def __init__(self):
