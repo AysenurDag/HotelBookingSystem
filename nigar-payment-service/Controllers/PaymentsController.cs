@@ -132,26 +132,7 @@ namespace nigar_payment_service.Controllers
             return Ok(response);
         }
 
-        [HttpPost("{id}/cancel")]
-        public async Task<IActionResult> Cancel(long id, [FromBody] CancelPaymentRequest req)
-        {
-            var payment = await _db.Payments.FindAsync(id);
-            if (payment == null) return NotFound();
-
-            payment.Status = PaymentStatus.Cancelled;
-            payment.UpdatedAt = DateTime.UtcNow;
-            payment.RefundReason = req.Reason;
-            await _db.SaveChangesAsync();
-
-            var evt = new PaymentCancelledEvent
-            {
-                ReservationId = payment.ReservationId,
-                PaymentId = payment.Id
-            };
-            PublishEvent("payment_cancelled", evt);
-
-            return Ok(payment);
-        }
+ 
 
         [HttpPost("{id}/refund")]
         public async Task<IActionResult> Refund(long id, [FromBody] RefundPaymentRequest req)
