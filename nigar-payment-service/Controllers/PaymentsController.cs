@@ -34,6 +34,14 @@ namespace nigar_payment_service.Controllers
             var payments = await _db.Payments.ToListAsync();
             return Ok(payments);
         }
+        
+        [HttpGet("{id:long}")]
+        public async Task<IActionResult> GetByPaymentId(long id)
+        {
+            var p = await _db.Payments.FindAsync(id);
+            return p == null ? NotFound() : Ok(p);
+        }
+
 
         [HttpGet("user/{customerId}")]
         public async Task<IActionResult> GetByUser(string customerId)
@@ -52,6 +60,21 @@ namespace nigar_payment_service.Controllers
             if (payment == null)
                 return NotFound(new { message = $"No payment found for reservation {reservationId}" });
             return Ok(payment);
+        }
+        
+            
+        [HttpGet("status/{status}")]
+        public async Task<IActionResult> GetByStatus(string status)
+        {
+            // Enum değerini parse et (case-insensitive)
+            if (!Enum.TryParse<PaymentStatus>(status, true, out var parsedStatus))
+                return BadRequest(new { message = $"Invalid payment status '{status}'" });
+
+            var payments = await _db.Payments
+                .Where(p => p.Status == parsedStatus)
+                .ToListAsync();
+
+            return Ok(payments);
         }
         
 
@@ -150,6 +173,8 @@ namespace nigar_payment_service.Controllers
 
             return Ok(payment);
         }
+    
+
 
         
         private void PublishEvent<T>(string queue, T @event)
