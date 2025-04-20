@@ -6,9 +6,12 @@ import com.trivago.buse_booking_service.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Booking API", description = "Endpoints for hotel bookings")
@@ -58,6 +61,14 @@ public class BookingController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Booking>> getBookingsByUser(@PathVariable String userId) {
         return ResponseEntity.ok(bookingService.getBookingsByUser(userId));
+    }
+
+    @Operation(summary = "Get bookings within a date range")
+    @GetMapping("/date-range")
+    public ResponseEntity<List<Booking>> getBookingsByDateRange(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return ResponseEntity.ok(bookingService.getBookingsInDateRange(start, end));
     }
 
     @Operation(summary = "Get bookings by status")

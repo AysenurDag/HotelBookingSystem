@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 //import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,10 @@ public class BookingService {
 
     public List<Booking> getBookingsByStatus(String status) {
         return bookingRepository.findByStatus(status);
+    }
+
+    public List<Booking> getBookingsInDateRange(LocalDate start, LocalDate end) {
+        return bookingRepository.findByCheckInDateBetweenOrCheckOutDateBetween(start, end, start, end);
     }
 
     public Booking createBooking(Booking booking) {
