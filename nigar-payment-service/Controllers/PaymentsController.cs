@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using nigar_payment_service.DbContext;
 using nigar_payment_service.Events;
+using nigar_payment_service.Gateways;
 using nigar_payment_service.Models;
 
 using nigar_payment_service.Models.DTOs;
@@ -21,11 +22,13 @@ namespace nigar_payment_service.Controllers
     {
         private readonly PaymentDbContext _db;
         private readonly IConnectionFactory _factory;
+        private readonly IPaymentGateway _gateway;
 
-        public PaymentsController(PaymentDbContext db, IConnectionFactory factory)
+        public PaymentsController(PaymentDbContext db, IConnectionFactory factory, IPaymentGateway gateway)
         {
             _db = db;
             _factory = factory;
+            _gateway = gateway;
         }
 
         [HttpGet]
@@ -81,56 +84,40 @@ namespace nigar_payment_service.Controllers
         [HttpPost("process")]
         public async Task<IActionResult> Process([FromBody] PaymentProcessRequest req)
         {
-            // Simulate payment outcome
-            bool success = new Random().Next(0, 2) == 0;
-
-            // Record payment
-            var payment = new Payment
-            {
-                ReservationId = req.ReservationId,
-                CustomerId = req.CustomerId,
-                Amount = req.Amount,
-                Status = success ? PaymentStatus.Success : PaymentStatus.Failed,
-                CreatedAt = DateTime.UtcNow,
-                FailureReason = success ? null : "Simulated failure"
+            //  DB’ye Pending kaydı ekle
+            var corrId = Guid.NewGuid();
+            var payment = new Payment {
+                ReservationId  = req.ReservationId,
+                CustomerId     = req.CustomerId,
+                Amount         = req.Amount,
+                CorrelationId  = corrId,
+                CardLast4      = req.CardNumber[^4..],
+                Status         = PaymentStatus.Pending,
+                CreatedAt      = DateTime.UtcNow
             };
             _db.Payments.Add(payment);
             await _db.SaveChangesAsync();
 
-            // Prepare event
-            if (success)
-            {
-                var evt = new PaymentSucceededEvent
-                {
-                    ReservationId = req.ReservationId,
-                    PaymentId = payment.Id  // int or long
-                };
-                PublishEvent("payment_succeeded", evt);
-            }
-            else
-            {
-                var evt = new PaymentFailedEvent
-                {
-                    ReservationId = req.ReservationId,
-                    PaymentId = payment.Id,
-                    Reason = payment.FailureReason
-                };
-                PublishEvent("payment_failed", evt);
-            }
+            //  Gateway’e gönder
+            var dto = new PaymentRequestDto(
+                corrId,
+                req.ReservationId,
+                req.CustomerId,
+                req.Amount,
+                req.CardNumber,
+                req.Expiry,
+                req.Cvv
+            );
+            var gatewayResp = await _gateway.ProcessAsync(dto);
 
-            // Respond with created payment
-            var response = new PaymentResponse
-            {
-                Id = payment.Id,
-                ReservationId = payment.ReservationId,
-                CustomerId = payment.CustomerId,
-                Amount = payment.Amount,
-                Status = payment.Status,
-                CreatedAt = payment.CreatedAt,
-                UpdatedAt = payment.UpdatedAt
-            };
-            return Ok(response);
+            //  202 Accepted dön, sonucu Saga’da takip et
+            return Accepted(new {
+                payment.Id,
+                correlationId = gatewayResp.CorrelationId,
+                status        = gatewayResp.Status
+            });
         }
+
 
  
 

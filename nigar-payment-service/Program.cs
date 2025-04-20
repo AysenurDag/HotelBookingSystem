@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using nigar_payment_service.Consumers;
 using nigar_payment_service.DbContext;
+using nigar_payment_service.Gateways;
 using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +20,8 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
 builder.Services.AddSingleton<IConnectionFactory>(_ =>
     new ConnectionFactory
     {
-        HostName            = "10.47.7.151",
+        //HostName            = "10.47.7.151",
+        HostName            = "localhost",
         Port                = 5672,
         UserName            = "guest",
         Password            = "guest",
@@ -33,6 +35,9 @@ builder.Services.AddSingleton<IConnectionFactory>(_ =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IPaymentGateway, RuleBasedPaymentGateway>();
+
 
 var app = builder.Build();
 
