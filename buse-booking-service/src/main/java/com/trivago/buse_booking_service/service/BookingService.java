@@ -1,5 +1,8 @@
 package com.trivago.buse_booking_service.service;
 
+import com.trivago.buse_booking_service.messaging.BookingEventProducer;
+import com.trivago.buse_booking_service.messaging.ReservationCancelledEvent;
+import com.trivago.buse_booking_service.messaging.ReservationCreatedEvent;
 import com.trivago.buse_booking_service.model.Booking;
 import com.trivago.buse_booking_service.model.BookingStatus;
 import com.trivago.buse_booking_service.repository.BookingRepository;
@@ -17,8 +20,10 @@ public class BookingService {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private BookingEventProducer eventProducer;
+
     public Booking createBooking(Booking booking) {
-        // Oda aynı tarihte zaten rezerve edilmişse hata
         List<Booking> conflicts = bookingRepository
                 .findByRoomIdAndCheckInDateLessThanEqualAndCheckOutDateGreaterThanEqual(
                         booking.getRoomId(), booking.getCheckOutDate(), booking.getCheckInDate());
@@ -27,8 +32,20 @@ public class BookingService {
             throw new IllegalStateException("This room is already booked for the selected dates.");
         }
 
-        booking.setStatus(BookingStatus.PENDING); // Saga'dan sonra CONFIRMED olacak
-        return bookingRepository.save(booking);
+        booking.setStatus(BookingStatus.PENDING); // Saga sonrası CONFIRMED olabilir
+        Booking saved = bookingRepository.save(booking);
+
+        // ▶️ Event gönder
+        ReservationCreatedEvent event = new ReservationCreatedEvent(
+                saved.getBookingId(),
+                saved.getRoomId(),
+                saved.getUserId(),
+                saved.getCheckInDate(),
+                saved.getCheckOutDate()
+        );
+        eventProducer.sendCreatedEvent(event);
+
+        return saved;
     }
 
     public Optional<Booking> getBooking(Long id) {
@@ -45,6 +62,14 @@ public class BookingService {
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         booking.setStatus(BookingStatus.CANCELLED);
-        return booking; // JPA transactional olduğu için otomatik update edilir
+
+        // ▶️ Cancel event gönder
+        ReservationCancelledEvent event = new ReservationCancelledEvent(
+                booking.getBookingId(),
+                "Cancelled by user or system"
+        );
+        eventProducer.sendCancelledEvent(event);
+
+        return booking;
     }
 }
