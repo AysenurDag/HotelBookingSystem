@@ -22,6 +22,11 @@ public class BookingService {
 
     @Autowired
     private BookingEventProducer eventProducer;
+    
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
+    }
+    
 
     public Booking createBooking(Booking booking) {
         List<Booking> conflicts = bookingRepository

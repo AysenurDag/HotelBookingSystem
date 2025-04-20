@@ -29,6 +29,14 @@ public class BookingController {
         bookingHistoryService.logHistory(savedBooking.getBookingId(), "CREATED");
         return ResponseEntity.ok(savedBooking);
     }
+    @Operation(summary = "Cancel a booking")
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Booking> cancelBooking(@PathVariable Long id) {
+        Booking cancelled = bookingService.cancelBooking(id);
+        bookingHistoryService.logHistory(cancelled.getBookingId(), "CANCELLED");
+        return ResponseEntity.ok(cancelled);
+    }
+
 
     @Operation(summary = "Get booking by ID")
     @GetMapping("/{id}")
@@ -38,20 +46,20 @@ public class BookingController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping
+@Operation(summary = "Get all bookings")
+public ResponseEntity<List<Booking>> getAllBookings() {
+    List<Booking> bookings = bookingService.getAllBookings();
+    return ResponseEntity.ok(bookings);
+}
+
     @Operation(summary = "Get bookings by user ID")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Booking>> getBookingsByUser(@PathVariable String userId) {
         return ResponseEntity.ok(bookingService.getBookingsByUser(userId));
     }
 
-    @Operation(summary = "Cancel a booking")
-    @PostMapping("/{id}/cancel")
-    public ResponseEntity<Booking> cancelBooking(@PathVariable Long id) {
-        Booking cancelled = bookingService.cancelBooking(id);
-        bookingHistoryService.logHistory(cancelled.getBookingId(), "CANCELLED");
-        return ResponseEntity.ok(cancelled);
-    }
-
+  
     @Operation(summary = "Get booking history")
     @GetMapping("/{id}/history")
     public ResponseEntity<?> getBookingHistory(@PathVariable Long id) {
