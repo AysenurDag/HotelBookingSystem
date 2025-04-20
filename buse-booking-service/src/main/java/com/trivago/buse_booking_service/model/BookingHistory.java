@@ -1,18 +1,26 @@
 package com.trivago.buse_booking_service.model;
 
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
+@Schema(description = "Represents an action log entry for a booking")
 public class BookingHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Unique history entry ID")
     private Long id;
 
+    @Schema(description = "Related booking ID", example = "1")
     private Long bookingId;
-    private String action; // CREATED, UPDATED, CANCELLED
+
+    @Schema(description = "Action performed", example = "CREATED")
+    private String action;
+
+    @Schema(description = "Timestamp of the action", example = "2025-04-20T21:30:00")
     private LocalDateTime timestamp;
 
     // Getters and Setters
@@ -48,4 +56,3 @@ public class BookingHistory {
         this.timestamp = timestamp;
     }
 }
-
