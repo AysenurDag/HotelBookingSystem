@@ -11,6 +11,7 @@ using nigar_payment_service.Events;
 using nigar_payment_service.Models;
 
 using nigar_payment_service.Models.DTOs;
+using RabbitMQ.Client.Exceptions;
 
 namespace nigar_payment_service.Controllers
 {
@@ -42,6 +43,17 @@ namespace nigar_payment_service.Controllers
                 .ToListAsync();
             return Ok(payments);
         }
+        
+        [HttpGet("reservation/{reservationId}")]
+        public async Task<IActionResult> GetByReservation(long reservationId)
+        {
+            var payment = await _db.Payments
+                .FirstOrDefaultAsync(p => p.ReservationId == reservationId);
+            if (payment == null)
+                return NotFound(new { message = $"No payment found for reservation {reservationId}" });
+            return Ok(payment);
+        }
+        
 
         [HttpPost("process")]
         public async Task<IActionResult> Process([FromBody] PaymentProcessRequest req)
@@ -139,15 +151,26 @@ namespace nigar_payment_service.Controllers
             return Ok(payment);
         }
 
-        // Helper to publish events
+        
         private void PublishEvent<T>(string queue, T @event)
         {
-            using var connection = _factory.CreateConnection();
-            using var channel = connection.CreateModel();
-            channel.QueueDeclare(queue: queue, durable: false, exclusive: false, autoDelete: false);
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(@event));
-            channel.BasicPublish(exchange: string.Empty, routingKey: queue, basicProperties: null, body: body);
+            try
+            {
+                using var connection = _factory.CreateConnection();
+                using var channel    = connection.CreateModel();
+                channel.QueueDeclare(queue: queue, durable: false, exclusive: false, autoDelete: false, arguments: null);
+
+                var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(@event));
+                channel.BasicPublish(exchange: "", routingKey: queue, basicProperties: null, body: body);
+                Console.WriteLine($"📤 Event published to {queue}");
+            }
+            catch (BrokerUnreachableException ex)
+            {
+                // Development sırasında RabbitMQ bağlantı hatası olursa hata fırlatma.
+                Console.WriteLine($"⚠️ Dev mode: RabbitMQ’a bağlanamadı, event atlaması yapılıyor. Detay: {ex.Message}");
+            }
         }
+
     }
 }
 
