@@ -1,30 +1,40 @@
 package com.trivago.buse_booking_service.messaging;
 
-public class ReservationCreatedEvent {
-    private Long reservationId;
-    private String userId;
-    private String hotelId;
+import java.time.LocalDate;
 
+public class ReservationCreatedEvent {
+
+    private Long bookingId;
+    private String roomId;
+    private String userId;
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
+
+    // Constructors
     public ReservationCreatedEvent() {}
 
-
-
-
-    public ReservationCreatedEvent(Long reservationId, String userId, String hotelId) {
-        this.reservationId = reservationId;
+    public ReservationCreatedEvent(Long bookingId, String roomId, String userId,
+                                   LocalDate checkInDate, LocalDate checkOutDate) {
+        this.bookingId = bookingId;
+        this.roomId = roomId;
         this.userId = userId;
-        this.hotelId = hotelId;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
     }
 
-    public Long getReservationId() {
-        return reservationId;
-    }
+    // Getters and Setters
+    public Long getBookingId() { return bookingId; }
+    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
 
-    public String getUserId() {
-        return userId;
-    }
+    public String getRoomId() { return roomId; }
+    public void setRoomId(String roomId) { this.roomId = roomId; }
 
-    public String getHotelId() {
-        return hotelId;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public LocalDate getCheckInDate() { return checkInDate; }
+    public void setCheckInDate(LocalDate checkInDate) { this.checkInDate = checkInDate; }
+
+    public LocalDate getCheckOutDate() { return checkOutDate; }
+    public void setCheckOutDate(LocalDate checkOutDate) { this.checkOutDate = checkOutDate; }
 }
