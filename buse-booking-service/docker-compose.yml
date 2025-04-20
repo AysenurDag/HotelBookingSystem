@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  booking-mysql:
+    image: mysql:8
+    container_name: booking-mysql
+    environment:
+      MYSQL_DATABASE: booking_db
+      MYSQL_ROOT_PASSWORD: 123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  buse-booking-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: buse-booking-service
+    depends_on:
+      - booking-mysql
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://booking-mysql:3306/booking_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      RABBITMQ_EXCHANGE_NAME: booking.exchange
+      RABBITMQ_ROUTING_CREATED: booking.created
+      RABBITMQ_ROUTING_CANCELLED: booking.cancelled
+
+volumes:
+  mysql-data:
