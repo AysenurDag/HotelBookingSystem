@@ -1,38 +1,44 @@
+from flask_restx import fields
 from datetime import datetime
 
-class Hotel:
-    def __init__(self, name, address, city, country, description, rating=0, 
-                 amenities=None, accessibility_features=None, images=None, 
-                 contact_info=None, check_in_time="14:00", check_out_time="12:00"):
-        self.name = name
-        self.address = address
-        self.city = city
-        self.country = country
-        self.description = description
-        self.rating = rating
-        self.amenities = amenities or []
-        self.accessibility_features = accessibility_features or []
-        self.images = images or []
-        self.contact_info = contact_info or {}
-        self.check_in_time = check_in_time
-        self.check_out_time = check_out_time
-        self.created_at = datetime.utcnow()
-        self.updated_at = self.created_at
-        
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "address": self.address,
-            "city": self.city,
-            "country": self.country,
-            "description": self.description,
-            "rating": self.rating,
-            "amenities": self.amenities,
-            "accessibility_features": self.accessibility_features,
-            "images": self.images,
-            "contact_info": self.contact_info,
-            "check_in_time": self.check_in_time,
-            "check_out_time": self.check_out_time,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
-        }
+def get_hotel_model(api):
+    """
+    Define the Hotel model for Swagger documentation
+    """
+    return api.model('Hotel', {
+        'id': fields.String(readonly=True, description='The hotel unique identifier'),
+        'name': fields.String(required=True, description='Hotel name'),
+        'address': fields.String(required=True, description='Hotel address'),
+        'city': fields.String(required=True, description='Hotel city'),
+        'country': fields.String(required=True, description='Hotel country'),
+        'rating': fields.Float(description='Hotel rating', min=1, max=5),
+        'email': fields.String(description='Hotel contact email'),
+        'phone': fields.String(description='Hotel contact phone'),
+        'description': fields.String(description='Hotel description'),
+        'amenities': fields.List(fields.String, description='List of hotel amenities'),
+        'images': fields.List(fields.String, description='List of hotel image URLs'),
+        'created_at': fields.DateTime(readonly=True, description='Creation timestamp'),
+        'updated_at': fields.DateTime(readonly=True, description='Last update timestamp')
+    })
+
+"""
+bu ne
+"""
+def get_pagination_model(api):
+    """
+    Define the Pagination metadata model for Swagger documentation
+    """
+    return api.model('PaginationMeta', {
+        'page': fields.Integer(description='Current page number'),
+        'per_page': fields.Integer(description='Items per page'),
+        'total': fields.Integer(description='Total number of items')
+    })
+
+def get_hotel_list_model(api):
+    """
+    Define the Hotel list model with pagination for Swagger documentation
+    """
+    return api.model('HotelList', {
+        'data': fields.List(fields.Nested(get_hotel_model(api)), description='List of hotels'),
+        'meta': fields.Nested(get_pagination_model(api), description='Pagination metadata')
+    })
