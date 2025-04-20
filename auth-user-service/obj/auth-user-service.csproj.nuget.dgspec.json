@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj": {}
+    "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj": {
+    "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj",
+        "projectUniqueName": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj",
         "projectName": "auth-user-service",
-        "projectPath": "C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj",
-        "packagesPath": "C:\\Users\\mahsu\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\auth-user-service\\obj\\",
+        "projectPath": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj",
+        "packagesPath": "C:\\Users\\MahsunDağAtolla\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\auth-user-service\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\mahsu\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\MahsunDağAtolla\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -38,7 +38,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -92,7 +98,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.114/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
