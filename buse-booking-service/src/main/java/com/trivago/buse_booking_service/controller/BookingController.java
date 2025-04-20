@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Booking API", description = "Endpoints for hotel bookings")
 @RestController
@@ -81,6 +82,16 @@ public class BookingController {
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Booking>> getBookingsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(bookingService.getBookingsByStatus(status));
+    }
+
+    // ----------------------
+    // 📊 İstatistikler
+    // ----------------------
+
+    @Operation(summary = "Get booking statistics by status")
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Long>> getBookingStatistics() {
+        return ResponseEntity.ok(bookingService.getBookingStatistics());
     }
 
     // ----------------------

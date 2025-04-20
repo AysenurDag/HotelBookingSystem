@@ -9,6 +9,8 @@ import com.trivago.buse_booking_service.repository.BookingRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import java.time.LocalDate;
 //import java.time.LocalDate;
@@ -82,5 +84,13 @@ public class BookingService {
         eventProducer.sendCancelledEvent(event);
 
         return booking;
+    }
+
+    public Map<String, Long> getBookingStatistics() {
+        List<Booking> allBookings = bookingRepository.findAll();
+        return allBookings.stream()
+                .collect(Collectors.groupingBy(
+                        booking -> booking.getStatus().name(),
+                        Collectors.counting()));
     }
 }
