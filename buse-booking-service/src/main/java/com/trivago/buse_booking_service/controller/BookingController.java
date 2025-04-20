@@ -32,6 +32,7 @@ public class BookingController {
     @Operation(summary = "Create a new booking")
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
+        // bookingId otomatik olarak veritabanı tarafından oluşturulacak
         Booking savedBooking = bookingService.createBooking(booking);
         bookingHistoryService.logHistory(savedBooking.getBookingId(), "CREATED");
         return ResponseEntity.ok(savedBooking);

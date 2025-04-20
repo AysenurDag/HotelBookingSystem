@@ -10,7 +10,7 @@ public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "Unique booking ID", example = "1")
+    @Schema(description = "Unique booking ID", accessMode = Schema.AccessMode.READ_ONLY)
     private Long bookingId;
 
     @Schema(description = "ID of the booked room", example = "ROOM-101")
