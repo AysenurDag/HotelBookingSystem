@@ -60,6 +60,13 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
+    @Operation(summary = "Delete a booking")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
+        bookingService.deleteBooking(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // ----------------------
     // 🔍 Filtreli aramalar
     // ----------------------
@@ -88,6 +95,12 @@ public class BookingController {
     @GetMapping("/today")
     public ResponseEntity<List<Booking>> getTodayBookings() {
         return ResponseEntity.ok(bookingService.getBookingsToday());
+    }
+
+    @Operation(summary = "Get bookings for today")
+    @GetMapping("/today")
+    public ResponseEntity<List<Booking>> getTodaysBookings() {
+        return ResponseEntity.ok(bookingService.getTodaysBookings());
     }
 
     // ----------------------

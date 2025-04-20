@@ -99,4 +99,16 @@ public class BookingService {
         return bookingRepository.findByCheckInDateOrCheckOutDate(today, today);
     }
 
+    public List<Booking> getTodaysBookings() {
+        LocalDate today = LocalDate.now();
+        return bookingRepository.findByCheckInDateOrCheckOutDate(today, today);
+    }
+
+    public void deleteBooking(Long id) {
+        if (!bookingRepository.existsById(id)) {
+            throw new IllegalArgumentException("Booking not found");
+        }
+        bookingRepository.deleteById(id);
+    }
+
 }
