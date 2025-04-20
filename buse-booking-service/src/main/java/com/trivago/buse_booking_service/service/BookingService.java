@@ -31,7 +31,7 @@ public class BookingService {
     }
 
     public List<Booking> getBookingsByStatus(String status) {
-        return bookingRepository.findByStatus(status);
+        return bookingRepository.findByStatus(BookingStatus.valueOf(status.toUpperCase()));
     }
 
     public List<Booking> getBookingsInDateRange(LocalDate start, LocalDate end) {
