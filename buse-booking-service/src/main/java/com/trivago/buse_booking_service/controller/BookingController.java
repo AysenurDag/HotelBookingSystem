@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +23,10 @@ public class BookingController {
 
     @Autowired
     private BookingHistoryService bookingHistoryService;
+
+    // ----------------------
+    // 📌 CRUD işlemleri
+    // ----------------------
 
     @Operation(summary = "Create a new booking")
     @PostMapping
@@ -47,15 +50,18 @@ public class BookingController {
         return bookingService.getBooking(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-
     }
 
-    @GetMapping
     @Operation(summary = "Get all bookings")
+    @GetMapping
     public ResponseEntity<List<Booking>> getAllBookings() {
         List<Booking> bookings = bookingService.getAllBookings();
         return ResponseEntity.ok(bookings);
     }
+
+    // ----------------------
+    // 🔍 Filtreli aramalar
+    // ----------------------
 
     @Operation(summary = "Get bookings by user ID")
     @GetMapping("/user/{userId}")
@@ -76,6 +82,10 @@ public class BookingController {
     public ResponseEntity<List<Booking>> getBookingsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(bookingService.getBookingsByStatus(status));
     }
+
+    // ----------------------
+    // 🕓 İlgili kayıtlar
+    // ----------------------
 
     @Operation(summary = "Get booking history")
     @GetMapping("/{id}/history")
