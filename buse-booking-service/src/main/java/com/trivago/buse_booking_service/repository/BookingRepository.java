@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
+    @SuppressWarnings("null")
     List<Booking> findAll();
 
     List<Booking> findByStatus(String status);
@@ -23,4 +24,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             String roomId,
             LocalDate checkout,
             LocalDate checkin);
+
+    List<Booking> findByCheckInDateOrCheckOutDate(LocalDate checkIn, LocalDate checkOut);
+
 }

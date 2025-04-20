@@ -84,6 +84,12 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getBookingsByStatus(status));
     }
 
+    @Operation(summary = "Get bookings with check-in or check-out today")
+    @GetMapping("/today")
+    public ResponseEntity<List<Booking>> getTodayBookings() {
+        return ResponseEntity.ok(bookingService.getBookingsToday());
+    }
+
     // ----------------------
     // 📊 İstatistikler
     // ----------------------

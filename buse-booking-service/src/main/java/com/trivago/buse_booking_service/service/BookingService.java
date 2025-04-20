@@ -93,4 +93,10 @@ public class BookingService {
                         booking -> booking.getStatus().name(),
                         Collectors.counting()));
     }
+
+    public List<Booking> getBookingsToday() {
+        LocalDate today = LocalDate.now();
+        return bookingRepository.findByCheckInDateOrCheckOutDate(today, today);
+    }
+
 }
