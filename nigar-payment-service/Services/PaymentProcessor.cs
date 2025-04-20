@@ -2,7 +2,8 @@ using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using nigar_payment_service.Models;  
+using nigar_payment_service.Events;
+using nigar_payment_service.Models;
 using nigar_payment_service.Services;
 
 
@@ -36,9 +37,7 @@ public class PaymentProcessor : BackgroundService
                 Console.WriteLine($"💳 Payment succeeded for Reservation ID: {reservation.ReservationId}");
                 var successEvent = new PaymentSucceededEvent
                 {
-                    ReservationId = reservation.ReservationId,
-                    UserId = reservation.UserId,
-                    HotelId = reservation.HotelId
+                 
                 };
                 PublishEvent(successEvent, "payment_succeeded", channel);
             }
@@ -48,7 +47,7 @@ public class PaymentProcessor : BackgroundService
                 var failedEvent = new PaymentFailedEvent
                 {
                     ReservationId = reservation.ReservationId,
-                    Reason = "Card declined"
+                    Reason = "Payment processing failed."
                 };
                 PublishEvent(failedEvent, "payment_failed", channel);
             }
