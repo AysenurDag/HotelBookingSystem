@@ -5,6 +5,12 @@ using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(opt =>
+    opt.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod()));
+
 //  EF Core
 builder.Services.AddDbContext<PaymentDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -21,7 +27,7 @@ builder.Services.AddSingleton<IConnectionFactory>(_ =>
     });
 
 // Hosted Service (consumer)
-builder.Services.AddHostedService<ReservationCreatedConsumer>();
+//builder.Services.AddHostedService<ReservationCreatedConsumer>();
 
 
 builder.Services.AddControllers();
@@ -30,6 +36,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UseCors(); 
 
 if (app.Environment.IsDevelopment())
 {
