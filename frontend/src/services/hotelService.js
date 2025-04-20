@@ -16,7 +16,6 @@ export const searchHotels = async (searchParams) => {
       // Other search parameters can be added here
       
       const response = await fetch(`${API_URL}/hotels?${queryParams.toString()}`);
-      console.log(API_URL)
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
