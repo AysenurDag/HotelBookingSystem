@@ -1,4 +1,4 @@
-from flask_restx import Resource, Namespace, reqparse
+from flask_restx import Resource, Namespace, reqparse, fields
 from flask import request
 from services.room_service import RoomService
 from models.room import get_room_model, get_room_list_model
@@ -13,9 +13,9 @@ room_service = RoomService()
 room_model = get_room_model(room_ns)
 room_list_model = get_room_list_model(room_ns)
 
-# Define status update model
+# Define status update model - FIXED: Use fields directly, not from namespace
 status_update_model = room_ns.model('StatusUpdate', {
-    'status': room_ns.fields.String(required=True, description='New room status')
+    'status': fields.String(required=True, description='New room status')
 })
 
 # Create parsers for query parameters
