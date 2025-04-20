@@ -9,7 +9,12 @@ public class Payment
     public decimal Amount { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; }    // Cancel/refund zamanını tutmak için
+    public DateTime? UpdatedAt { get; set; }    //Refund zamanını tutmak için
+    
+    
+    public Guid   CorrelationId { get; set; }  // Her process çağrısını eşleştirmek için
+    public string CardLast4     { get; set; }  // Güvenlik için yalnızca son 4 rakamı tutuyoruz
+    
     public string? FailureReason { get; set; }  // “Card declined” vb.
     public string? RefundReason  { get; set; }  // iptal/iadede sebep
 }
