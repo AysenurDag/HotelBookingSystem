@@ -56,8 +56,7 @@ public class BookingController {
     @Operation(summary = "Get all bookings")
     @GetMapping
     public ResponseEntity<List<Booking>> getAllBookings() {
-        List<Booking> bookings = bookingService.getAllBookings();
-        return ResponseEntity.ok(bookings);
+        return ResponseEntity.ok(bookingService.getAllBookings());
     }
 
     @Operation(summary = "Delete a booking")
@@ -89,12 +88,6 @@ public class BookingController {
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Booking>> getBookingsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(bookingService.getBookingsByStatus(status));
-    }
-
-    @Operation(summary = "Get bookings with check-in or check-out today")
-    @GetMapping("/today")
-    public ResponseEntity<List<Booking>> getTodayBookings() {
-        return ResponseEntity.ok(bookingService.getBookingsToday());
     }
 
     @Operation(summary = "Get bookings for today")
