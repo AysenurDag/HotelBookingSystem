@@ -29,6 +29,7 @@ public class BookingController {
         bookingHistoryService.logHistory(savedBooking.getBookingId(), "CREATED");
         return ResponseEntity.ok(savedBooking);
     }
+
     @Operation(summary = "Cancel a booking")
     @PostMapping("/{id}/cancel")
     public ResponseEntity<Booking> cancelBooking(@PathVariable Long id) {
@@ -37,21 +38,21 @@ public class BookingController {
         return ResponseEntity.ok(cancelled);
     }
 
-
     @Operation(summary = "Get booking by ID")
     @GetMapping("/{id}")
     public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
         return bookingService.getBooking(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+
     }
 
     @GetMapping
-@Operation(summary = "Get all bookings")
-public ResponseEntity<List<Booking>> getAllBookings() {
-    List<Booking> bookings = bookingService.getAllBookings();
-    return ResponseEntity.ok(bookings);
-}
+    @Operation(summary = "Get all bookings")
+    public ResponseEntity<List<Booking>> getAllBookings() {
+        List<Booking> bookings = bookingService.getAllBookings();
+        return ResponseEntity.ok(bookings);
+    }
 
     @Operation(summary = "Get bookings by user ID")
     @GetMapping("/user/{userId}")
@@ -59,7 +60,12 @@ public ResponseEntity<List<Booking>> getAllBookings() {
         return ResponseEntity.ok(bookingService.getBookingsByUser(userId));
     }
 
-  
+    @Operation(summary = "Get bookings by status")
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Booking>> getBookingsByStatus(@PathVariable String status) {
+        return ResponseEntity.ok(bookingService.getBookingsByStatus(status));
+    }
+
     @Operation(summary = "Get booking history")
     @GetMapping("/{id}/history")
     public ResponseEntity<?> getBookingHistory(@PathVariable Long id) {

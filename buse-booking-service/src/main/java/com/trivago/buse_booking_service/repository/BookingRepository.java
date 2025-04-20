@@ -12,11 +12,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAll();
 
+    List<Booking> findByStatus(String status);
+
     List<Booking> findByUserId(String userId);
 
     List<Booking> findByRoomIdAndCheckInDateLessThanEqualAndCheckOutDateGreaterThanEqual(
             String roomId,
             LocalDate checkout,
-            LocalDate checkin
-    );
+            LocalDate checkin);
 }

@@ -22,11 +22,14 @@ public class BookingService {
 
     @Autowired
     private BookingEventProducer eventProducer;
-    
+
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
-    
+
+    public List<Booking> getBookingsByStatus(String status) {
+        return bookingRepository.findByStatus(status);
+    }
 
     public Booking createBooking(Booking booking) {
         List<Booking> conflicts = bookingRepository
@@ -46,8 +49,7 @@ public class BookingService {
                 saved.getRoomId(),
                 saved.getUserId(),
                 saved.getCheckInDate(),
-                saved.getCheckOutDate()
-        );
+                saved.getCheckOutDate());
         eventProducer.sendCreatedEvent(event);
 
         return saved;
@@ -71,8 +73,7 @@ public class BookingService {
         // ▶️ Cancel event gönder
         ReservationCancelledEvent event = new ReservationCancelledEvent(
                 booking.getBookingId(),
-                "Cancelled by user or system"
-        );
+                "Cancelled by user or system");
         eventProducer.sendCancelledEvent(event);
 
         return booking;
