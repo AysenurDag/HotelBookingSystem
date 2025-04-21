@@ -12,17 +12,16 @@ namespace auth_user_service.Messaging
 
         public MessageProducerService()
         {
-            var factory = new ConnectionFactory() { HostName = "10.47.7.151" };
+            //10.47.7.151
+            var factory = new ConnectionFactory() { HostName = "localhost" };
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-            // Kuyruğu tanımlıyoruz. Eğer daha önce oluşturulmamışsa oluşturur.
             _channel.QueueDeclare(queue: "userQueue", durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
         public void SendMessage(string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
-            // Default exchange ("") kullanılarak, routingKey olarak "userQueue" belirleniyor.
             _channel.BasicPublish(exchange: "", routingKey: "userQueue", basicProperties: null, body: body);
             Console.WriteLine("Gönderilen mesaj: " + message);
         }

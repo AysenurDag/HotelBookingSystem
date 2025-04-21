@@ -13,7 +13,7 @@ namespace auth_user_service.Messaging
 
         public MessageConsumerService()
         {
-            var factory = new ConnectionFactory() { HostName = "10.47.7.151" };
+            var factory = new ConnectionFactory() { HostName = "localhost" };
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
             _channel.QueueDeclare(queue: "userQueue", durable: false, exclusive: false, autoDelete: false);
