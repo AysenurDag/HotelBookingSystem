@@ -7,9 +7,9 @@ namespace auth_user_service.Controllers
     [Route("api/[controller]")]
     public class UserMessageController : ControllerBase
     {
-        private readonly MessagePublisher _publisher;
+        private readonly RabbitMqPublisher _publisher;
 
-        public UserMessageController(MessagePublisher publisher)
+        public UserMessageController(RabbitMqPublisher publisher)
         {
             _publisher = publisher;
         }

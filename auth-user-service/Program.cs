@@ -1,12 +1,36 @@
 ﻿using System.Reflection;
+using auth_user_service.Configuration;
 using auth_user_service.Data;
 using auth_user_service.Messaging;
 using auth_user_service.Repositories;
+using auth_user_service.Sagas;
 using Microsoft.EntityFrameworkCore;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<UserRegistrationSaga>();
+
+// RabbitMQ ayarları
+builder.Services.Configure<RabbitMqOptions>(
+    builder.Configuration.GetSection("RabbitMq"));
+
+// Ortama göre seçim
+if (builder.Environment.IsEnvironment("Test"))
+{
+    builder.Services.AddSingleton<InMemoryQueuePublisher>();
+    builder.Services.AddSingleton<IMessagePublisher>(sp =>
+        sp.GetRequiredService<InMemoryQueuePublisher>());
+}
+else
+{
+    builder.Services.AddSingleton<RabbitMqPublisher>();
+    builder.Services.AddSingleton<IMessagePublisher>(sp =>
+        sp.GetRequiredService<RabbitMqPublisher>());
+
+    builder.Services.AddHostedService<MessageConsumerService>();
+}
 
 // using auth_user_service.Repositories;
 builder.Services.AddScoped<IUserRepository, EfUserRepository>();
@@ -29,10 +53,6 @@ builder.Services.AddDbContext<AuthUserDbContext>(options =>
 // -- Mock repo
 //builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 
-// -- RabbitMQ publisher & consumer
-builder.Services.AddSingleton<MessagePublisher>();
-builder.Services.AddHostedService<MessageConsumerService>();
-
 // -- Controller’lar
 builder.Services.AddControllers();
 
@@ -47,20 +67,6 @@ builder.Services.AddSwaggerGen(c =>
     // Swagger’a XML yorumları dahil et
     c.IncludeXmlComments(xmlPath);
 });
-
-builder.Services.AddSingleton<MessagePublisher>();
-builder.Services.AddHostedService<MessageConsumerService>();
-try
-{
-    var producer = new MessageProducerService();
-    producer.SendMessage("Merhaba, bu bir test mesajıdır!");
-    producer.Close();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"RabbitMQ bağlantı hatası (yoksayar): {ex.Message}");
-}
-
 
 
 

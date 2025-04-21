@@ -16,12 +16,12 @@ namespace auth_user_service.Controllers
     {
         private readonly IUserRepository _userRepo;
         private readonly IRoleRepository _roleRepo;
-        private readonly MessagePublisher _messagePublisher;
+        private readonly RabbitMqPublisher _messagePublisher;
 
         public AuthController(
             IUserRepository userRepo,
             IRoleRepository roleRepo,
-            MessagePublisher messagePublisher)
+            RabbitMqPublisher messagePublisher)
         {
             _userRepo = userRepo;
             _roleRepo = roleRepo;

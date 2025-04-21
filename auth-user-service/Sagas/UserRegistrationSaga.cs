@@ -5,9 +5,8 @@ namespace auth_user_service.Sagas
 {
     public class UserRegistrationSaga
     {
-        private readonly MessagePublisher _messagePublisher;
-
-        public UserRegistrationSaga(MessagePublisher messagePublisher)
+        private readonly IMessagePublisher _messagePublisher;
+        public UserRegistrationSaga(IMessagePublisher messagePublisher)
         {
             _messagePublisher = messagePublisher;
         }
