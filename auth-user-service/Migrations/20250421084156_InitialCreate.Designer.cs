@@ -12,7 +12,7 @@ using auth_user_service.Data;
 namespace auth_user_service.Migrations
 {
     [DbContext(typeof(AuthUserDbContext))]
-    [Migration("20250420212540_InitialCreate")]
+    [Migration("20250421084156_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
