@@ -83,13 +83,13 @@ namespace nigar_payment_service.Gateways
             object evt = finalStatus == PaymentStatus.Success
                 ? new PaymentSucceededEvent
                 {
-                    ReservationId = dto.ReservationId,
+                    BookingId = dto.BookingId,
                     PaymentId     = payment.Id,
                    
                 }
                 : new PaymentFailedEvent
                 {
-                    ReservationId = dto.ReservationId,
+                    BookingId = dto.BookingId,
                     PaymentId     = payment.Id,
                     Reason        = reason!
                 };

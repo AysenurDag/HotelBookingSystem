@@ -55,13 +55,13 @@ namespace nigar_payment_service.Controllers
             return Ok(payments);
         }
         
-        [HttpGet("reservation/{reservationId}")]
-        public async Task<IActionResult> GetByReservation(long reservationId)
+        [HttpGet("booking/{bookingId}")]
+        public async Task<IActionResult> GetByBooking(long bookingId)
         {
             var payment = await _db.Payments
-                .FirstOrDefaultAsync(p => p.ReservationId == reservationId);
+                .FirstOrDefaultAsync(p => p.BookingId == bookingId);
             if (payment == null)
-                return NotFound(new { message = $"No payment found for reservation {reservationId}" });
+                return NotFound(new { message = $"No payment found for booking {bookingId}" });
             return Ok(payment);
         }
         
@@ -87,7 +87,7 @@ namespace nigar_payment_service.Controllers
             //  DB’ye Pending kaydı ekle
             var corrId = Guid.NewGuid();
             var payment = new Payment {
-                ReservationId  = req.ReservationId,
+                BookingId  = req.BookingId,
                 CustomerId     = req.CustomerId,
                 Amount         = req.Amount,
                 CorrelationId  = corrId,
@@ -101,7 +101,7 @@ namespace nigar_payment_service.Controllers
             //  Gateway’e gönder
             var dto = new PaymentRequestDto(
                 corrId,
-                req.ReservationId,
+                req.BookingId,
                 req.CustomerId,
                 req.Amount,
                 req.CardNumber,
@@ -134,7 +134,7 @@ namespace nigar_payment_service.Controllers
 
             var evt = new PaymentRefundedEvent
             {
-                ReservationId = payment.ReservationId,
+                BookingId = payment.BookingId,
                 PaymentId = payment.Id
             };
             PublishEvent("payment_refunded", evt);

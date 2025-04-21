@@ -21,19 +21,28 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
 
 // 2) RabbitMQ – config’den okumak için
 var rabbit = builder.Configuration.GetSection("RabbitMQ");
-builder.Services.AddSingleton<IConnectionFactory>(sp =>
-  new ConnectionFactory {
-    HostName               = rabbit["Host"]!,
-    Port                   = int.Parse(rabbit["Port"]!),
-    UserName               = rabbit["Username"]!,
-    Password               = rabbit["Password"]!,
-    DispatchConsumersAsync = true
-  });
 
-// 3) (Opsiyonel) consumer’ı aktif etmek isterseniz
-// builder.Services.AddHostedService<ReservationCreatedConsumer>();
+
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+{
+    var cfg = sp.GetRequiredService<IConfiguration>();
+    return new ConnectionFactory
+    {
+        HostName = cfg.GetValue<string>("RabbitMQ:Host"),
+        Port     = cfg.GetValue<int>("RabbitMQ:Port"),
+        UserName = cfg.GetValue<string>("RabbitMQ:Username"),
+        Password = cfg.GetValue<string>("RabbitMQ:Password"),
+        DispatchConsumersAsync = true
+    };
+});
+
 
 builder.Services.AddScoped<IPaymentGateway, RuleBasedPaymentGateway>();
+
+// BookingCreatedConsumer’ı Hosted Service olarak ekle
+builder.Services.AddHostedService<BookingCreatedConsumer>();
+
+
 
 // MVC + Swagger
 builder.Services.AddControllers();
