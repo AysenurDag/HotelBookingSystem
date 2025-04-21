@@ -1,5 +1,7 @@
 package com.trivago.buse_booking_service.controller;
 
+import com.trivago.buse_booking_service.messaging.BookingCreatedEvent;
+import com.trivago.buse_booking_service.messaging.BookingEventProducer;
 import com.trivago.buse_booking_service.model.Booking;
 import com.trivago.buse_booking_service.service.BookingHistoryService;
 import com.trivago.buse_booking_service.service.BookingService;
@@ -25,16 +27,26 @@ public class BookingController {
     @Autowired
     private BookingHistoryService bookingHistoryService;
 
+    @Autowired
+    private BookingEventProducer bookingProducer;
+
     // ----------------------
     // 📌 CRUD işlemleri
     // ----------------------
 
-    @Operation(summary = "Create a new booking")
+    @Operation(summary = "Create a new booking and emit BookingCreatedEvent with amount and currency to PaymentService")
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
-        // bookingId otomatik olarak veritabanı tarafından oluşturulacak
         Booking savedBooking = bookingService.createBooking(booking);
         bookingHistoryService.logHistory(savedBooking.getBookingId(), "CREATED");
+
+        BookingCreatedEvent event = new BookingCreatedEvent(
+                savedBooking.getBookingId().toString(),
+                savedBooking.getUserId(),
+                savedBooking.getAmount(),
+                savedBooking.getCurrency());
+        bookingProducer.sendBookingCreatedEvent(event);
+
         return ResponseEntity.ok(savedBooking);
     }
 
