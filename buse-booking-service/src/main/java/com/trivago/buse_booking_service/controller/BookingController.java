@@ -30,6 +30,21 @@ public class BookingController {
     @Autowired
     private BookingEventProducer bookingProducer;
 
+    @RestController
+    @RequestMapping("/api/test")
+    public class TestController {
+
+        @Autowired
+        private BookingEventProducer eventProducer;
+
+        @PostMapping("/booking-event")
+        public ResponseEntity<String> sendTestEvent() {
+            BookingCreatedEvent event = new BookingCreatedEvent("42", "user-1", 999.0, "USD");
+            eventProducer.sendBookingCreatedEvent(event);
+            return ResponseEntity.ok("BookingCreatedEvent sent.");
+        }
+    }
+
     // ----------------------
     // 📌 CRUD işlemleri
     // ----------------------
