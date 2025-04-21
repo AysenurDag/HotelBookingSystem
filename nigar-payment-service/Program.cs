@@ -41,20 +41,14 @@ builder.Services.AddScoped<IPaymentGateway, RuleBasedPaymentGateway>();
 
 var app = builder.Build();
 
-app.UseCors(); 
+app.UseCors();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-
 app.MapControllers();
-
-// Optional health‐check or root
 app.MapGet("/", () => "💳 Payment Service is running!");
 
 app.Run();

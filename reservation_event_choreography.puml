@@ -1,0 +1,22 @@
+@startuml reservation_event_choreography
+skinparam linetype ortho
+
+actor User
+participant "Reservation Service" as RS
+participant "Payment Service" as PS
+
+User -> RS : POST /reservations
+RS -> RS : emit ReservationCreatedEvent
+RS --> PS : ReservationCreatedEvent
+
+PS -> PS : Process payment
+alt success
+  PS -> PS : emit PaymentProcessedEvent
+  PS --> RS : PaymentProcessedEvent
+  RS -> RS : Update Reservation: CONFIRMED
+else fail
+  PS -> PS : emit PaymentFailedEvent
+  PS --> RS : PaymentFailedEvent
+  RS -> RS : Update Reservation: CANCELLED
+end
+@enduml

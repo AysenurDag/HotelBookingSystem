@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  booking-db:
+    image: mysql:8.0
+    container_name: booking-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=booking_db
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payment-db:
+    image: postgres:15
+    container_name: payment-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=payment_db
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  booking-service:
+    build:
+      context: ./buse-booking-service
+    depends_on:
+      booking-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+
+  payment-service:
+    build: ./nigar-payment-service
+    container_name: payment-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      payment-db:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=payment-db;Port=5432;Database=payment_db;Username=postgres;Password=123456
+      - RabbitMq__Host=rabbitmq
