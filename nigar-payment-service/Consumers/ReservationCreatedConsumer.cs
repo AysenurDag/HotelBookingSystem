@@ -129,7 +129,7 @@ namespace nigar_payment_service.Consumers
 
         private decimal CalculateAmount(ReservationCreatedEvent reservation)
         {
-            // TODO: implement real pricing
+          
             return 100m;
         }
 
