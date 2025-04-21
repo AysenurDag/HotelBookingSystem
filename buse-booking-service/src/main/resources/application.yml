@@ -26,6 +26,14 @@ springdoc:
 rabbitmq:
   exchange:
     name: booking.exchange
+
   routing:
-    created: booking.created
-    cancelled: booking.cancelled
+    bookingCreated: booking.created # BookingCreatedEvent (→ Payment)
+    cancelled: booking.cancelled # ReservationCancelledEvent (→ Audit/Logging)
+    reservationCreated: booking.reservation.created # ReservationCreatedEvent (→ Hotel)
+    confirmed: booking.confirmed # ReservationConfirmedEvent (→ Notification/UI)
+
+  queue:
+    paymentSucceeded: payment.success.queue # dinlenecek
+    paymentFailed: payment.failed.queue # dinlenecek
+    roomFailed: hotel.room.failed.queue # dinlenecek (RoomAvailabilityFailedEvent)

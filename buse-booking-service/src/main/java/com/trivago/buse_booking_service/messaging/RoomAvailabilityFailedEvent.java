@@ -1,27 +1,27 @@
 package com.trivago.buse_booking_service.messaging;
 
 /**
- * Saga başarısız olduğunda gönderilir.
- * Audit/Logging/Notification Service bu event'i dinleyebilir.
+ * Hotel Service tarafından gönderilir.
+ * Oda uygun değilse Booking Service tarafından dinlenir.
  */
-public class ReservationCancelledEvent {
+public class RoomAvailabilityFailedEvent {
 
-    private Long bookingId;
+    private String bookingId;
     private String reason;
 
-    public ReservationCancelledEvent() {
+    public RoomAvailabilityFailedEvent() {
     }
 
-    public ReservationCancelledEvent(Long bookingId, String reason) {
+    public RoomAvailabilityFailedEvent(String bookingId, String reason) {
         this.bookingId = bookingId;
         this.reason = reason;
     }
 
-    public Long getBookingId() {
+    public String getBookingId() {
         return bookingId;
     }
 
-    public void setBookingId(Long bookingId) {
+    public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
     }
 
