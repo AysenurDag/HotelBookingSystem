@@ -1,7 +1,9 @@
-﻿using auth_user_service.Data;
+﻿using System.Reflection;
+using auth_user_service.Data;
 using auth_user_service.Messaging;
 using auth_user_service.Repositories;
 using Microsoft.EntityFrameworkCore;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,8 +38,15 @@ builder.Services.AddControllers();
 
 // Swagger/OpenAPI servisi ekleniyor
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Proje derlendiğinde oluşan XML belgesinin adını ve yolunu alıyoruz
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
+    // Swagger’a XML yorumları dahil et
+    c.IncludeXmlComments(xmlPath);
+});
 
 builder.Services.AddSingleton<MessagePublisher>();
 builder.Services.AddHostedService<MessageConsumerService>();
@@ -58,8 +67,10 @@ catch (Exception ex)
 var app = builder.Build();
 
 app.UseSwagger();
-app.UseSwaggerUI();
-
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");
+});
 app.UseHttpsRedirection();
 
 // Controller endpoint'lerini haritalıyoruz
