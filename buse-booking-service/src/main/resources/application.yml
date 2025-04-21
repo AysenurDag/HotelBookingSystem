@@ -34,6 +34,8 @@ rabbitmq:
     confirmed: booking.confirmed # ReservationConfirmedEvent (→ Notification/UI)
 
   queue:
-    paymentSucceeded: payment.success.queue # dinlenecek
-    paymentFailed: payment.failed.queue # dinlenecek
-    roomFailed: hotel.room.failed.queue # dinlenecek (RoomAvailabilityFailedEvent)
+    bookingCreated: booking.created.queue # Booking Created Event kuyruğu
+    bookingCancelled: booking.cancelled.queue # Cancel Event kuyruğu
+    paymentSucceeded: payment.success.queue # Payment Success kuyruğu
+    paymentFailed: payment.failed.queue # Payment Failed kuyruğu
+    roomFailed: hotel.room.failed.queue # Room Availability Failed kuyruğu

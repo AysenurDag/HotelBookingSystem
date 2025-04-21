@@ -38,8 +38,9 @@ public class BookingEventProducer {
         rabbitTemplate.convertAndSend(exchange, reservationCreatedRoutingKey, event);
     }
 
-    // ❌ Saga başarısızsa cancel bilgisi gönder
     public void sendCancelledEvent(ReservationCancelledEvent event) {
+        // Logları kontrol edelim
+        System.out.println("[📤] Sending Cancelled Event: " + event.getBookingId());
         rabbitTemplate.convertAndSend(exchange, cancelledRoutingKey, event);
     }
 
