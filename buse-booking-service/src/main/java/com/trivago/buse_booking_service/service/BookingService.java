@@ -1,5 +1,6 @@
 package com.trivago.buse_booking_service.service;
 
+import com.trivago.buse_booking_service.messaging.BookingCreatedEvent;
 import com.trivago.buse_booking_service.messaging.BookingEventProducer;
 import com.trivago.buse_booking_service.messaging.ReservationCancelledEvent;
 import com.trivago.buse_booking_service.messaging.ReservationConfirmedEvent;
@@ -8,7 +9,6 @@ import com.trivago.buse_booking_service.model.Booking;
 import com.trivago.buse_booking_service.model.BookingStatus;
 import com.trivago.buse_booking_service.repository.BookingRepository;
 import jakarta.transaction.Transactional;
-
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import com.trivago.buse_booking_service.messaging.BookingCreatedEvent;
 
 @Service
 public class BookingService {
@@ -158,7 +157,7 @@ public class BookingService {
                 reason));
     }
 
-    // BookingConfirmationEvent mesajını dinle
+    // BookingCreatedEvent mesajını dinle
     @RabbitListener(queues = "booking.created.queue")
     public void handleBookingCreatedEvent(BookingCreatedEvent event) {
         System.out.println("[📥] Received Booking Created Event: " + event.getBookingId());
