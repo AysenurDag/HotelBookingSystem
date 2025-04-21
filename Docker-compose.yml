@@ -67,5 +67,9 @@ services:
       - "8082:8080"
     environment:
       - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=payment-db;Port=5432;Database=payment_db;Username=postgres;Password=123456
-      - RabbitMq__Host=rabbitmq
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
