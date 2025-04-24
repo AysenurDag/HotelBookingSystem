@@ -1,31 +1,19 @@
 ﻿using auth_user_service.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace auth_user_service.Data
 {
-    public class AuthUserDbContext : DbContext
+    public class AuthUserDbContext : IdentityDbContext<ApplicationUser>
     {
         public AuthUserDbContext(DbContextOptions<AuthUserDbContext> opts)
-            : base(opts) { }
-
-        public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+            : base(opts)
         {
-            modelBuilder.Entity<UserRole>()
-                .HasKey(ur => new { ur.UserId, ur.RoleId });
+        }
 
-            modelBuilder.Entity<UserRole>()
-                .HasOne(ur => ur.User)
-                .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserId);
-
-            modelBuilder.Entity<UserRole>()
-                .HasOne(ur => ur.Role)
-                .WithMany(r => r.UserRoles)
-                .HasForeignKey(ur => ur.RoleId);
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
         }
     }
 }

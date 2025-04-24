@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using auth_user_service.Data;
 
@@ -11,9 +12,11 @@ using auth_user_service.Data;
 namespace auth_user_service.Migrations
 {
     [DbContext(typeof(AuthUserDbContext))]
-    partial class AuthUserDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250424175537_InitialIdentitySchema")]
+    partial class InitialIdentitySchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

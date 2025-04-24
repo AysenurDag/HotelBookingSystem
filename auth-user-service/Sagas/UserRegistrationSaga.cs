@@ -6,49 +6,44 @@ namespace auth_user_service.Sagas
     public class UserRegistrationSaga
     {
         private readonly IMessagePublisher _messagePublisher;
-        public UserRegistrationSaga(IMessagePublisher messagePublisher)
-        {
-            _messagePublisher = messagePublisher;
-        }
 
-        public async Task ExecuteSaga(User user)
+        public UserRegistrationSaga(IMessagePublisher messagePublisher)
+            => _messagePublisher = messagePublisher;
+
+        public async Task ExecuteSaga(ApplicationUser user)
         {
             try
             {
-
-                // Adım 2: Hoş geldin e-posta gönderimi (örnek, message queue kullanımı)
                 var emailSent = await SendWelcomeEmail(user);
                 if (!emailSent)
-                    throw new Exception("Email gönderimi başarısız.");
+                    throw new Exception("E-posta gönderimi başarısız.");
 
                 var bookingInitialized = await InitializeBookingProfile(user);
                 if (!bookingInitialized)
-                    throw new Exception("Booking servisine entegrasyon başarısız.");
+                    throw new Exception("Booking servisi entegrasyonu başarısız.");
 
-                // Saga başarılı, tüm adımlar tamamlandı.
+                // Tüm adımlar başarılıysa harekete gerek yok.
             }
             catch (Exception)
             {
-                // Geri alma (compensation) işlemleri
                 await CompensateUserRegistration(user);
             }
         }
 
-        private Task<bool> SendWelcomeEmail(User user)
+        private Task<bool> SendWelcomeEmail(ApplicationUser user)
         {
             _messagePublisher.Publish($"SendWelcomeEmail:{user.Email}");
             return Task.FromResult(true);
         }
 
-        private Task<bool> InitializeBookingProfile(User user)
+        private Task<bool> InitializeBookingProfile(ApplicationUser user)
         {
             _messagePublisher.Publish($"InitializeBookingProfile:{user.Id}");
             return Task.FromResult(true);
         }
 
-        private Task CompensateUserRegistration(User user)
+        private Task CompensateUserRegistration(ApplicationUser user)
         {
-            // Başarısızsa,kaydı iptal et
             _messagePublisher.Publish($"CompensateRegistration:{user.Id}");
             return Task.CompletedTask;
         }

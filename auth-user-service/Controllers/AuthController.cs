@@ -1,66 +1,94 @@
-﻿using auth_user_service.Data;
-using auth_user_service.Messaging;
+﻿using auth_user_service.DTOs;
 using auth_user_service.Models;
-using auth_user_service.Sagas;
-using Microsoft.AspNetCore.Mvc;
-using auth_user_service.DTOs;
 using auth_user_service.Repositories;
-
-
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace auth_user_service.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IUserRepository _userRepo;
-        private readonly IRoleRepository _roleRepo;
-        private readonly RabbitMqPublisher _messagePublisher;
+        private readonly IApplicationUserRepository _userRepo;
+        private readonly IConfiguration _config;
 
-        public AuthController(
-            IUserRepository userRepo,
-            IRoleRepository roleRepo,
-            RabbitMqPublisher messagePublisher)
+        public AuthController(IApplicationUserRepository userRepo, IConfiguration config)
         {
             _userRepo = userRepo;
-            _roleRepo = roleRepo;
-            _messagePublisher = messagePublisher;
+            _config = config;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> Register(RegisterDto dto)
         {
-            var user = new User(
-                dto.Name,
-                dto.Surname,
-                dto.Email,
-                dto.PhoneNumber,
-                dto.Password
+            var existingUser = await _userRepo.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+                return BadRequest("Email already in use");
+
+            var user = new ApplicationUser
+            {
+                UserName = dto.Email,
+                Email = dto.Email,
+                Name = dto.Name,
+                Surname = dto.Surname,
+                PhoneNumber = dto.PhoneNumber
+            };
+
+            var result = await _userRepo.CreateAsync(user, dto.Password);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            foreach (var role in dto.Roles)
+                await _userRepo.AddToRoleAsync(user, role);
+
+            return Ok("User created successfully");
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto dto)
+        {
+            var user = await _userRepo.FindByEmailAsync(dto.Email);
+            if (user == null || !await _userRepo.CheckPasswordAsync(user, dto.Password))
+                return Unauthorized("Invalid credentials");
+
+            var roles = await _userRepo.GetRolesAsync(user);
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["JwtSettings:Issuer"],
+                audience: _config["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds
             );
 
-            await _userRepo.AddAsync(user);
+            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+        }
 
-            var rolesToAssign = dto.Roles?.Any() == true
-                ? dto.Roles
-                : new List<string> { "ROLE_USER" };
-
-            foreach (var roleName in rolesToAssign)
-            {
-                var role = await _roleRepo.GetByNameAsync(roleName);
-                if (role != null)
-                {
-                    await _userRepo.AddRoleAsync(user.Id, role.Id);
-                }
-                else
-                {
-                }
-            }
-
-            var saga = new UserRegistrationSaga(_messagePublisher);
-            await saga.ExecuteSaga(user);
-
-            return Ok(new { user.Id });
+        [HttpGet("admin")]
+        [Authorize(Policy = "RequireAdmin")]
+        public IActionResult AdminOnly()
+        {
+            return Ok("This endpoint is only for Admins.");
         }
     }
 }
+
+
+
+
