@@ -116,6 +116,22 @@ namespace auth_user_service.Controllers
             return Ok("Password changed successfully");
         }
 
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout([FromServices] RedisService redisService)
+        {
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var expiration = TimeSpan.FromMinutes(60); // Token süresi kadar blacklist'te dursun
+                redisService.AddTokenToBlacklist(token, expiration);
+                return Ok("Logged out successfully");
+            }
+
+            return BadRequest("Invalid token");
+        }
+
 
         [HttpPost("assign-role")]
         [Authorize(Roles = "Admin")]

@@ -1,4 +1,5 @@
 ﻿using auth_user_service.Data;
+using auth_user_service.Middlewares;
 using auth_user_service.Models;
 using auth_user_service.Repositories;
 using auth_user_service.Services;
@@ -14,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 // 1) DbContext
 builder.Services.AddDbContext<AuthUserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddSingleton<RedisService>();
+
 
 // 2) Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -99,6 +102,7 @@ var app = builder.Build();
 
 // 7) Middleware sıralaması
 app.UseRouting();
+app.UseMiddleware<TokenBlacklistMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
