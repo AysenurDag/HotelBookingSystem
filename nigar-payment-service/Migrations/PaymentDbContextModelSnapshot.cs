@@ -33,6 +33,9 @@ namespace nigar_payment_service.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
+                    b.Property<long>("BookingId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("CardLast4")
                         .IsRequired()
                         .HasColumnType("text");
@@ -52,9 +55,6 @@ namespace nigar_payment_service.Migrations
 
                     b.Property<string>("RefundReason")
                         .HasColumnType("text");
-
-                    b.Property<long>("ReservationId")
-                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
