@@ -27,10 +27,10 @@ namespace nigar_payment_service.Gateways
 
         public Task<GatewayResponse> ProcessAsync(PaymentRequestDto dto)
         {
-            // 1) İlk aşamada hemen Pending döndür
+            //  İlk aşamada hemen Pending döndür
             var response = new GatewayResponse(dto.CorrelationId, PaymentStatus.Pending);
 
-            // 2) Arka planda simülasyonu başlat
+            //  Arka planda simülasyonu başlat
             _ = SimulateAndPublishAsync(dto);
 
             return Task.FromResult(response);
@@ -38,10 +38,10 @@ namespace nigar_payment_service.Gateways
 
         private async Task SimulateAndPublishAsync(PaymentRequestDto dto)
         {
-            // 1) Küçük rastgele gecikme
+            // Küçük rastgele gecikme
             await Task.Delay(_rng.Next(500, 2000));
 
-            // 2) Kural‑tabanlı sonuç belirle
+            // Kural‑tabanlı sonuç belirle
             var finalStatus = PaymentStatus.Success;
             string? reason = null;
 
@@ -61,7 +61,7 @@ namespace nigar_payment_service.Gateways
                 reason = "Random failure";
             }
 
-            // 3) Yeni bir DI scope açıp DbContext al
+            // Yeni bir DI scope açıp DbContext al
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
 
@@ -77,8 +77,8 @@ namespace nigar_payment_service.Gateways
 
             // 4) Event publish
             var queueName = finalStatus == PaymentStatus.Success
-                ? "payment_succeeded"
-                : "payment_failed";
+                ? "payment.success.queue"
+                : "payment.failed.queue";
 
             object evt = finalStatus == PaymentStatus.Success
                 ? new PaymentSucceededEvent
@@ -98,7 +98,7 @@ namespace nigar_payment_service.Gateways
             using var channel = conn.CreateModel();
             channel.QueueDeclare(
                 queue:      queueName,
-                durable:    false,
+                durable:   true,
                 exclusive:  false,
                 autoDelete: false,
                 arguments:  null
@@ -111,6 +111,7 @@ namespace nigar_payment_service.Gateways
                 basicProperties: null,
                 body:            body
             );
+            Console.WriteLine($"📤 Gateway published '{queueName}': {JsonSerializer.Serialize(evt)}");
         }
     }
 }

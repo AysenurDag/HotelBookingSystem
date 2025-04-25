@@ -37,7 +37,7 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
 });
 
 
-builder.Services.AddScoped<IPaymentGateway, RuleBasedPaymentGateway>();
+builder.Services.AddSingleton<IPaymentGateway, RuleBasedPaymentGateway>();
 
 // BookingCreatedConsumer’ı Hosted Service olarak ekle
 builder.Services.AddHostedService<BookingCreatedConsumer>();
