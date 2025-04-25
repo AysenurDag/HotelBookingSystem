@@ -94,6 +94,29 @@ namespace auth_user_service.Controllers
             });
         }
 
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
+
+            var user = await _userRepo.FindByIdAsync(Guid.Parse(userId));
+            if (user == null)
+                return Unauthorized();
+
+            var userManager = HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+
+            var result = await userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok("Password changed successfully");
+        }
+
+
         [HttpPost("assign-role")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto dto)
@@ -121,6 +144,22 @@ namespace auth_user_service.Controllers
             return Ok(new { id, email, roles });
         }
 
-       
+        [HttpGet("all-users")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _userRepo.GetAllAsync();
+            return Ok(users.Select(u => new
+            {
+                u.Id,
+                u.Email,
+                u.Name,
+                u.Surname
+            }));
+        }
+
+
+
+
     }
 }

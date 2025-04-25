@@ -30,5 +30,10 @@ namespace auth_user_service.Repositories
         {
             return await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId.ToString());
         }
+
+        public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
+        {
+            return await _userManager.Users.ToListAsync();
+        }
     }
 }
