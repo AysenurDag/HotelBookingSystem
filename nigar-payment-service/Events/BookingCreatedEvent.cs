@@ -1,9 +1,20 @@
-namespace nigar_payment_service.Events;
+using System.Text.Json.Serialization;
 
+namespace nigar_payment_service.Events
+{
     public class BookingCreatedEvent
     {
-        public long   BookingId   { get; set; }
-        public string UserId      { get; set; }
-        public decimal TotalAmount{ get; set; }
-        public string Currency    { get; set; }
+        [JsonPropertyName("bookingId")]
+        public long BookingId { get; set; }
+
+        [JsonPropertyName("userId")]
+        public string UserId { get; set; } = null!;
+
+        [JsonPropertyName("totalAmount")]
+        public decimal TotalAmount { get; set; }
+
+        [JsonPropertyName("currency")]
+        public string Currency { get; set; } = null!;
     }
+}
+

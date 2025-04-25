@@ -1,5 +1,8 @@
+using System;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
@@ -14,7 +17,12 @@ namespace nigar_payment_service.Consumers
     {
         private readonly IConnectionFactory _factory;
         private readonly IServiceProvider   _services;
-        private const string QueueName = "booking.created.queue";
+
+        // Gelen event’i dinlediğimiz kuyruk
+        private const string BookingQueue       = "booking.created.queue";
+        // Yayınlayacağımız event’ler için sabitler
+        private const string SuccessQueue       = "payment.success.queue";
+        private const string FailureQueue       = "payment.failed.queue";
 
         public BookingCreatedConsumer(IConnectionFactory factory, IServiceProvider services)
         {
@@ -24,29 +32,33 @@ namespace nigar_payment_service.Consumers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // RabbitMQ’a yeniden bağlanma döngüsü
             IConnection connection = null!;
             IModel      channel    = null!;
+
+            // RabbitMQ’a bağlanma tekrar döngüsü
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
                     connection = _factory.CreateConnection();
                     channel    = connection.CreateModel();
-                    channel.QueueDeclare(queue: QueueName,
-                                         durable: true,
-                                         exclusive: false,
-                                         autoDelete: false,
-                                         arguments: null);
-                    Console.WriteLine($"✅ Listening on '{QueueName}'");
+                    channel.QueueDeclare(
+                        queue: BookingQueue,
+                        durable: true,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null
+                    );
+                    Console.WriteLine($"✅ Listening on '{BookingQueue}'");
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❌ RabbitMQ bağlanamadı: {ex.Message}, 5s sonra tekrar...");
-                    await Task.Delay(5000, stoppingToken);
+                    Console.WriteLine($"❌ RabbitMQ bağlanamadı: {ex.Message}. 5s sonra tekrar...");
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
+
             if (channel == null) return;
 
             var consumer = new AsyncEventingBasicConsumer(channel);
@@ -65,62 +77,77 @@ namespace nigar_payment_service.Consumers
 
                 Console.WriteLine($"📩 BookingCreatedEvent received: {json}");
 
+                // DB scope
                 using var scope = _services.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
 
-                // 1) Ödeme kaydı oluştur (Pending)
-                var payment = new Payment {
+                // Pending durumda yeni ödeme kaydı
+                var payment = new Payment
+                {
                     BookingId     = evt.BookingId,
                     CustomerId    = evt.UserId,
                     Amount        = evt.TotalAmount,
                     Status        = PaymentStatus.Pending,
                     CreatedAt     = DateTime.UtcNow,
-                    CorrelationId = Guid.NewGuid()
+                    CorrelationId = Guid.NewGuid(),
+                    CardLast4     = "0000"   // dummy last4, 
                 };
                 db.Payments.Add(payment);
                 await db.SaveChangesAsync();
 
-                // 2) Simule et veya gateway ile işle
-                bool success = new Random().Next(0,2)==0;
+                //  Simülasyon  
+                bool success = new Random().Next(0, 2) == 0;
                 payment.Status = success ? PaymentStatus.Success : PaymentStatus.Failed;
                 if (!success) payment.FailureReason = "Simulated failure";
                 payment.UpdatedAt = DateTime.UtcNow;
                 await db.SaveChangesAsync();
 
-                // 3) Sonuca göre event publish
+                //  Sonuca göre ilgili kuyruğa event publish
                 if (success)
                 {
-                    var okEvt = new PaymentSucceededEvent {
+                    var okEvt = new PaymentSucceededEvent
+                    {
                         BookingId = evt.BookingId,
                         PaymentId = payment.Id
                     };
-                    Publish(channel, "payment_succeeded", okEvt);
+                    Publish(channel, SuccessQueue, okEvt);
                 }
                 else
                 {
-                    var failEvt = new PaymentFailedEvent {
+                    var failEvt = new PaymentFailedEvent
+                    {
                         BookingId = evt.BookingId,
                         PaymentId = payment.Id,
                         Reason    = payment.FailureReason!
                     };
-                    Publish(channel, "payment_failed", failEvt);
+                    Publish(channel, FailureQueue, failEvt);
                 }
 
                 channel.BasicAck(ea.DeliveryTag, false);
             };
 
-            channel.BasicConsume(queue: QueueName, autoAck: false, consumer: consumer);
+            channel.BasicConsume(queue: BookingQueue, autoAck: false, consumer: consumer);
 
-            // Sonsuza dek çalışan task
+            // Uygulama kapanana dek task’i canlı tut
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }
 
         private void Publish<T>(IModel channel, string queue, T message)
         {
             var body = JsonSerializer.SerializeToUtf8Bytes(message);
-            channel.QueueDeclare(queue: queue, durable: true,
-                                 exclusive: false, autoDelete: false, arguments: null);
-            channel.BasicPublish(exchange: "", routingKey: queue, basicProperties: null, body: body);
+            channel.QueueDeclare(
+                queue: queue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null
+            );
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: queue,
+                basicProperties: null,
+                body: body
+            );
             Console.WriteLine($"📤 Published '{queue}': {JsonSerializer.Serialize(message)}");
         }
     }
