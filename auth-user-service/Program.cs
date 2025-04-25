@@ -1,22 +1,15 @@
-﻿using System.Reflection;
-using System.Text;
-using auth_user_service.Configuration;
-using auth_user_service.Data;
-using auth_user_service.Messaging;
+﻿using auth_user_service.Data;
 using auth_user_service.Models;
 using auth_user_service.Repositories;
-using auth_user_service.Sagas;
+using auth_user_service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// 0) (Opsiyonel) Uygulama ayarlarını oku
-// var configuration = builder.Configuration;
 
 // 1) DbContext
 builder.Services.AddDbContext<AuthUserDbContext>(options =>
@@ -27,7 +20,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
-    // ... diğer parola kuralları
+    // Diğer parola kuralları
 })
     .AddEntityFrameworkStores<AuthUserDbContext>()
     .AddDefaultTokenProviders();
@@ -55,17 +48,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 4) Authorization Policy
+// 4) Authorization
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdmin", policy =>
         policy.RequireRole("Admin"));
 });
 
-// 5) (Opsiyonel) Uygulama içi repository/servis kaydı
+// 5) Uygulama içi servis/repository bağımlılıkları
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
-// 6) MVC + Swagger
+// 6) Controller + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -75,7 +69,8 @@ builder.Services.AddSwaggerGen(c =>
         Title = "AuthUserService API",
         Version = "v1"
     });
-    // JWT Bearer header desteği
+
+    // Swagger'da JWT desteği
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -92,7 +87,7 @@ builder.Services.AddSwaggerGen(c =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
+                    Id = "Bearer"
                 }
             },
             new string[] {}
@@ -104,26 +99,26 @@ var app = builder.Build();
 
 // 7) Middleware sıralaması
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 8) Swagger middleware
+// 8) Swagger
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthUserService v1");
-    // Eğer swagger'ı kök dizinde açmak istersen:
+    // Swagger anasayfada açılsın istersen:
     // c.RoutePrefix = string.Empty;
 });
 
 app.MapControllers();
 
+// 9) Rolleri otomatik oluştur
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    string[] roles = { "Admin", "User" , "HotelOwner" };
+    string[] roles = { "Admin", "User", "HotelOwner" };
 
     foreach (var role in roles)
     {

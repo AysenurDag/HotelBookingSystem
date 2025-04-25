@@ -1,5 +1,6 @@
 ﻿using auth_user_service.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace auth_user_service.Repositories
 {
@@ -24,5 +25,10 @@ namespace auth_user_service.Repositories
 
         public Task<bool> CheckPasswordAsync(ApplicationUser user, string password)
             => _userManager.CheckPasswordAsync(user, password);
+
+        public async Task<ApplicationUser?> FindByIdAsync(Guid userId)
+        {
+            return await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId.ToString());
+        }
     }
 }
