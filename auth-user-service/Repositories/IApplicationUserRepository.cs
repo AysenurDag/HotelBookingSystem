@@ -12,6 +12,8 @@ namespace auth_user_service.Repositories
         Task<IdentityResult> AddToRoleAsync(ApplicationUser user, string role);
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
         Task<IEnumerable<ApplicationUser>> GetAllAsync();
+        Task<IdentityResult> DeleteAsync(ApplicationUser user);
+
 
 
 

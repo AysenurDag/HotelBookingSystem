@@ -21,10 +21,10 @@ namespace auth_user_service.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IApplicationUserRepository _userRepo;
-        private static Dictionary<string, string> _pending2FACodes = new();
         private readonly IConfiguration _config;
         private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private static Dictionary<string, string> _pending2FACodes = new();
 
         public AuthController(
             IApplicationUserRepository userRepo,
@@ -36,9 +36,9 @@ namespace auth_user_service.Controllers
             _config = config;
             _tokenService = tokenService;
             _userManager = userManager;
-            
-           
         }
+
+        // --- POST Endpoints ---
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto, [FromServices] EmailService emailService)
@@ -60,22 +60,12 @@ namespace auth_user_service.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            // Kullanıcıya roller ataması
             foreach (var role in dto.Roles)
                 await _userRepo.AddToRoleAsync(user, role);
 
-            // Email Confirmation Token 
-            var userManager = HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token }, Request.Scheme);
 
-            var confirmationLink = Url.Action(
-                action: "ConfirmEmail",
-                controller: "Auth",
-                values: new { userId = user.Id, token = token },
-                protocol: Request.Scheme
-            );
-
-            // Email body'yi düzgün HTML formatında hazırla
             var emailBody = $@"
             <html>
             <body>
@@ -85,33 +75,10 @@ namespace auth_user_service.Controllers
             </body>
             </html>";
 
-            // HTML body'yi gönder
             await emailService.SendEmailAsync(user.Email, "Confirm your email", emailBody);
-
-
 
             return Ok("Registration successful. Please check your email to confirm your account.");
         }
-
-
-        [HttpGet("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail(string userId, string token)
-        {
-            var user = await _userRepo.FindByIdAsync(Guid.Parse(userId));
-            if (user == null)
-                return NotFound("User not found");
-
-            var userManager = HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
-            var result = await userManager.ConfirmEmailAsync(user, token);
-
-            if (result.Succeeded)
-                return Ok("Email confirmed successfully!");
-            else
-                return BadRequest("Email confirmation failed.");
-        }
-
-
-
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto, [FromServices] EmailService emailService)
@@ -129,7 +96,7 @@ namespace auth_user_service.Controllers
         }
 
         [HttpPost("verify-2fa")]
-        public async Task<IActionResult> Verify2FA(string email, string code , [FromServices] IConfiguration config)
+        public async Task<IActionResult> Verify2FA(string email, string code, [FromServices] IConfiguration config)
         {
             if (!_pending2FACodes.ContainsKey(email))
                 return BadRequest("No pending 2FA request for this email");
@@ -143,17 +110,16 @@ namespace auth_user_service.Controllers
             if (user == null)
                 return Unauthorized();
 
-            // Token üret
             var roles = await _userRepo.GetRolesAsync(user);
-
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id),
-        new Claim(ClaimTypes.Email, user.Email)
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
 
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -170,7 +136,6 @@ namespace auth_user_service.Controllers
             return Ok(new { token = tokenString });
         }
 
-
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
         {
@@ -183,11 +148,7 @@ namespace auth_user_service.Controllers
             await _tokenService.MarkRefreshTokenAsUsed(rt);
             var (newAccess, newRefresh) = await _tokenService.GenerateTokensAsync(user);
 
-            return Ok(new
-            {
-                accessToken = newAccess,
-                refreshToken = newRefresh
-            });
+            return Ok(new { accessToken = newAccess, refreshToken = newRefresh });
         }
 
         [HttpPost("change-password")]
@@ -202,14 +163,12 @@ namespace auth_user_service.Controllers
             if (user == null)
                 return Unauthorized();
 
-            var userManager = HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
-
-            var result = await userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
 
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            return Ok("Password changed successfully");
+            return Ok("Password changed successfully.");
         }
 
         [HttpPost("logout")]
@@ -220,14 +179,13 @@ namespace auth_user_service.Controllers
 
             if (!string.IsNullOrEmpty(token))
             {
-                var expiration = TimeSpan.FromMinutes(60); // Token süresi kadar blacklist'te dursun
+                var expiration = TimeSpan.FromMinutes(60);
                 redisService.AddTokenToBlacklist(token, expiration);
-                return Ok("Logged out successfully");
+                return Ok("Logged out successfully.");
             }
 
             return BadRequest("Invalid token");
         }
-
 
         [HttpPost("assign-role")]
         [Authorize(Roles = "Admin")]
@@ -237,12 +195,43 @@ namespace auth_user_service.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            // IRoleRepository yerine doğrudan UserManager üzerinden atıyoruz:
             var result = await _userManager.AddToRoleAsync(user, dto.Role);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
             return Ok($"Role '{dto.Role}' assigned to user '{user.Email}'.");
+        }
+
+        [HttpDelete("delete-user/{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser(Guid userId)
+        {
+            var user = await _userRepo.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("User not found");
+
+            var result = await _userRepo.DeleteAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok("User deleted successfully.");
+        }
+
+        // --- GET Endpoints ---
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            var user = await _userRepo.FindByIdAsync(Guid.Parse(userId));
+            if (user == null)
+                return NotFound("User not found");
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+                return Ok("Email confirmed successfully!");
+            else
+                return BadRequest("Email confirmation failed.");
         }
 
         [HttpGet("CurrentUser")]
@@ -261,17 +250,7 @@ namespace auth_user_service.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userRepo.GetAllAsync();
-            return Ok(users.Select(u => new
-            {
-                u.Id,
-                u.Email,
-                u.Name,
-                u.Surname
-            }));
+            return Ok(users.Select(u => new { u.Id, u.Email, u.Name, u.Surname }));
         }
-
-
-
-
     }
 }

@@ -35,5 +35,11 @@ namespace auth_user_service.Repositories
         {
             return await _userManager.Users.ToListAsync();
         }
+
+        public async Task<IdentityResult> DeleteAsync(ApplicationUser user)
+        {
+            return await _userManager.DeleteAsync(user);
+        }
+
     }
 }
