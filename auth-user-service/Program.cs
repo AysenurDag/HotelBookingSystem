@@ -57,6 +57,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireAdmin", policy =>
         policy.RequireRole("Admin"));
 });
+builder.Services.AddScoped<EmailService>();
+
 
 // 5) Uygulama içi servis/repository bağımlılıkları
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();

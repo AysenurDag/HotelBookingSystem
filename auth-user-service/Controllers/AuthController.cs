@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using auth_user_service.DTOs;
 using auth_user_service.Models;
@@ -10,6 +12,7 @@ using auth_user_service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace auth_user_service.Controllers
 {
@@ -18,17 +21,23 @@ namespace auth_user_service.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IApplicationUserRepository _userRepo;
+        private static Dictionary<string, string> _pending2FACodes = new();
+        private readonly IConfiguration _config;
         private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthController(
             IApplicationUserRepository userRepo,
             ITokenService tokenService,
+            IConfiguration config,
             UserManager<ApplicationUser> userManager)
         {
             _userRepo = userRepo;
+            _config = config;
             _tokenService = tokenService;
             _userManager = userManager;
+            
+           
         }
 
         [HttpPost("register")]
@@ -58,22 +67,65 @@ namespace auth_user_service.Controllers
             return Ok(new { user.Id, user.Email });
         }
 
+        
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login(LoginDto dto, [FromServices] EmailService emailService)
         {
             var user = await _userRepo.FindByEmailAsync(dto.Email);
             if (user == null || !await _userRepo.CheckPasswordAsync(user, dto.Password))
-                return Unauthorized("Invalid credentials.");
+                return Unauthorized("Invalid credentials");
 
-            // Access & Refresh token üret
-            var (accessToken, refreshToken) = await _tokenService.GenerateTokensAsync(user);
+            var code = new Random().Next(100000, 999999).ToString();
+            _pending2FACodes[dto.Email] = code;
 
-            return Ok(new
-            {
-                accessToken,
-                refreshToken
-            });
+            await emailService.SendEmailAsync(dto.Email, "Your 2FA Code", $"Your verification code is: {code}");
+
+            return Ok("2FA code sent to your email address.");
         }
+
+        [HttpPost("verify-2fa")]
+        public async Task<IActionResult> Verify2FA(string email, string code , [FromServices] IConfiguration config)
+        {
+            if (!_pending2FACodes.ContainsKey(email))
+                return BadRequest("No pending 2FA request for this email");
+
+            if (_pending2FACodes[email] != code)
+                return Unauthorized("Invalid 2FA code");
+
+            _pending2FACodes.Remove(email);
+
+            var user = await _userRepo.FindByEmailAsync(email);
+            if (user == null)
+                return Unauthorized();
+
+            // Token üret
+            var roles = await _userRepo.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Email, user.Email)
+    };
+
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["JwtSettings:Issuer"],
+                audience: _config["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds
+            );
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return Ok(new { token = tokenString });
+        }
+
 
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
