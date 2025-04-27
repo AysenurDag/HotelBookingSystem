@@ -1,5 +1,6 @@
-# Visual Studio klasörü
+# Visual Studio klasï¿½rï¿½
 .vs/
+*.suo
 
 bin/
 obj/
@@ -9,3 +10,4 @@ obj/
 
 # Auth-user-service 
 auth-user-service/ws/auth-user-service/FileContentIndex/
+
