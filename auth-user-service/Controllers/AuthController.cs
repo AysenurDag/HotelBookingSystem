@@ -41,11 +41,11 @@ namespace auth_user_service.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> Register(RegisterDto dto, [FromServices] EmailService emailService)
         {
-            var existing = await _userRepo.FindByEmailAsync(dto.Email);
-            if (existing != null)
-                return BadRequest("Email already in use.");
+            var existingUser = await _userRepo.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+                return BadRequest("Email already in use");
 
             var user = new ApplicationUser
             {
@@ -56,18 +56,62 @@ namespace auth_user_service.Controllers
                 PhoneNumber = dto.PhoneNumber
             };
 
-            var createResult = await _userRepo.CreateAsync(user, dto.Password);
-            if (!createResult.Succeeded)
-                return BadRequest(createResult.Errors);
+            var result = await _userRepo.CreateAsync(user, dto.Password);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
 
-            // Opsiyonel: birden fazla role atanabilir
+            // Kullanıcıya roller ataması
             foreach (var role in dto.Roles)
-                await _userManager.AddToRoleAsync(user, role);
+                await _userRepo.AddToRoleAsync(user, role);
 
-            return Ok(new { user.Id, user.Email });
+            // Email Confirmation Token 
+            var userManager = HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var confirmationLink = Url.Action(
+                action: "ConfirmEmail",
+                controller: "Auth",
+                values: new { userId = user.Id, token = token },
+                protocol: Request.Scheme
+            );
+
+            // Email body'yi düzgün HTML formatında hazırla
+            var emailBody = $@"
+            <html>
+            <body>
+                <p>Hello {user.Name},</p>
+                <p>Please confirm your email by clicking the link below:</p>
+                <p><a href='{confirmationLink}'>Confirm your email</a></p>
+            </body>
+            </html>";
+
+            // HTML body'yi gönder
+            await emailService.SendEmailAsync(user.Email, "Confirm your email", emailBody);
+
+
+
+            return Ok("Registration successful. Please check your email to confirm your account.");
         }
 
-        
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            var user = await _userRepo.FindByIdAsync(Guid.Parse(userId));
+            if (user == null)
+                return NotFound("User not found");
+
+            var userManager = HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var result = await userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+                return Ok("Email confirmed successfully!");
+            else
+                return BadRequest("Email confirmation failed.");
+        }
+
+
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto, [FromServices] EmailService emailService)
