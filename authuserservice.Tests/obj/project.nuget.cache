@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "mgFfp/icyLBnGMWK03nv7hARDTADE5py3MX9Dyh2/U2CZtz15+zba8mDR64i2d60Mhu8hJJ2MQucx5V+d8ixEw==",
+  "success": false,
+  "projectFilePath": "C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\authuserservice.Tests\\authuserservice.Tests.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1105",
+      "level": "Error",
+      "message": "Unable to find project information for 'C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.",
+      "libraryId": "C:\\Users\\mahsu\\OneDrive\\Masaüstü\\HotelBookingSystem\\auth-user-service\\auth-user-service.csproj",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    }
+  ]
+}
