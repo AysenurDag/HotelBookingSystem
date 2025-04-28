@@ -1,4 +1,5 @@
 {
   "python.analysis.extraPaths": ["./hotel-service/utils"],
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.compile.nullAnalysis.mode": "automatic"
 }

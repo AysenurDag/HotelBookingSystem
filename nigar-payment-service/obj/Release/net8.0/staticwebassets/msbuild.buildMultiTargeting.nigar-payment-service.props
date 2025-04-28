@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/nigar-payment-service.props" />
+</Project>
