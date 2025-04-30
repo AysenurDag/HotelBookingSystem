@@ -18,7 +18,7 @@ public class PaymentProcessor : BackgroundService
         var connection = factory.CreateConnection();
         var channel = connection.CreateModel();
 
-        channel.QueueDeclare(queue: "reservation_created", durable: false, exclusive: false, autoDelete: false, arguments: null);
+        channel.QueueDeclare(queue: "booking.created.queue", durable: false, exclusive: false, autoDelete: false, arguments: null);
 
         var consumer = new EventingBasicConsumer(channel);
 
@@ -26,15 +26,15 @@ public class PaymentProcessor : BackgroundService
         {
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
-            var reservation = JsonSerializer.Deserialize<ReservationCreatedEvent>(message);
+            var booking = JsonSerializer.Deserialize<BookingCreatedEvent>(message);
 
-            Console.WriteLine($"📩 ReservationCreatedEvent received. Reservation ID: {reservation.ReservationId}");
+            Console.WriteLine($"📩 Booking CreatedEvent received. Booking ID: {booking.BookingId}");
 
             var success = new Random().Next(0, 2) == 0;
 
             if (success)
             {
-                Console.WriteLine($"💳 Payment succeeded for Reservation ID: {reservation.ReservationId}");
+                Console.WriteLine($"💳 Payment succeeded for Booking ID: {booking.BookingId}");
                 var successEvent = new PaymentSucceededEvent
                 {
                  
@@ -43,17 +43,17 @@ public class PaymentProcessor : BackgroundService
             }
             else
             {
-                Console.WriteLine($"❌ Payment failed for Reservation ID: {reservation.ReservationId}");
+                Console.WriteLine($"❌ Payment failed for Booking ID: {booking.BookingId}");
                 var failedEvent = new PaymentFailedEvent
                 {
-                    ReservationId = reservation.ReservationId,
+                    BookingId = booking.BookingId,
                     Reason = "Payment processing failed."
                 };
                 PublishEvent(failedEvent, "payment_failed", channel);
             }
         };
 
-        channel.BasicConsume(queue: "reservation_created", autoAck: true, consumer: consumer);
+        channel.BasicConsume(queue: "booking.created.queue", autoAck: true, consumer: consumer);
 
         return Task.CompletedTask;
     }

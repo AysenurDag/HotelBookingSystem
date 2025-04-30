@@ -1,8 +1,9 @@
 package com.trivago.buse_booking_service.messaging;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import static com.trivago.buse_booking_service.config.RabbitMQConfig.EXCHANGE;
 
 /**
  * Booking Service tarafından oluşturulan event'leri RabbitMQ'ya gönderir.
@@ -16,41 +17,26 @@ public class BookingEventProducer {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    // Exchange adı (common)
-    @Value("${rabbitmq.exchange.name}")
-    private String exchange;
-
-    // Routing key'ler
-    @Value("${rabbitmq.routing.reservationCreated}")
-    private String reservationCreatedRoutingKey;
-
-    @Value("${rabbitmq.routing.cancelled}")
-    private String cancelledRoutingKey;
-
-    @Value("${rabbitmq.routing.bookingCreated}")
-    private String bookingCreatedRoutingKey;
-
-    @Value("${rabbitmq.routing.confirmed}")
-    private String confirmedRoutingKey;
-
     // ▶️ Hotel Service'e oda rezervasyonu bilgisi gönder
     public void sendCreatedEvent(ReservationCreatedEvent event) {
-        rabbitTemplate.convertAndSend(exchange, reservationCreatedRoutingKey, event);
+        rabbitTemplate.convertAndSend(EXCHANGE, "booking.reservation.created", event);
     }
 
+    // ❌ Kullanıcı rezervasyonu iptal ettiğinde
     public void sendCancelledEvent(ReservationCancelledEvent event) {
-        // Logları kontrol edelim
         System.out.println("[📤] Sending Cancelled Event: " + event.getBookingId());
-        rabbitTemplate.convertAndSend(exchange, cancelledRoutingKey, event);
+        rabbitTemplate.convertAndSend(EXCHANGE, "booking.cancelled", event);
     }
 
-    // 💳 Payment Service'e ödeme başlatılması için booking bilgisi gönder
     public void sendBookingCreatedEvent(BookingCreatedEvent event) {
-        rabbitTemplate.convertAndSend(exchange, bookingCreatedRoutingKey, event);
+        System.out.println("[📤] Sending Booking Created Event: " + event.getBookingId());
+        System.out.println("[📤] To Exchange: " + EXCHANGE);
+        System.out.println("[📤] With Routing Key: booking.created");
+        rabbitTemplate.convertAndSend(EXCHANGE, "booking.created", event);
     }
 
     // ✅ Her şey başarılıysa confirmation bilgisi gönder
     public void sendReservationConfirmedEvent(ReservationConfirmedEvent event) {
-        rabbitTemplate.convertAndSend(exchange, confirmedRoutingKey, event);
+        rabbitTemplate.convertAndSend(EXCHANGE, "booking.confirmed", event);
     }
 }

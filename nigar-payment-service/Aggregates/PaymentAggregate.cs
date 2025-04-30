@@ -2,14 +2,14 @@ namespace nigar_payment_service.Aggregates;
 
     public class PaymentAggregate
     {
-        public long ReservationId { get; private set; }
+        public long BookingId { get; private set; }
         public string UserId { get; private set; }
 
         public string Status { get; private set; }
 
-        public PaymentAggregate(long reservationId, string userId, string hotelId)
+        public PaymentAggregate(long bookingId, string userId, string hotelId)
         {
-            ReservationId = reservationId;
+            BookingId = bookingId;
             Status = "Pending";
         }
 

@@ -1,9 +1,9 @@
-namespace nigar_payment_service.Models;
+namespace nigar_payment_service.Events;
 
 
-public class PaymentFailedEvent
-{
-    public long   ReservationId { get; set; }
-    public long   PaymentId     { get; set; }
-    public string Reason        { get; set; }
-}
+  public class PaymentFailedEvent
+    {
+        public long   BookingId { get; set; }
+        public long   PaymentId { get; set; }
+        public string Reason    { get; set; }
+    }

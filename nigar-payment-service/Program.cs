@@ -6,55 +6,68 @@ using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS
 builder.Services.AddCors(opt =>
-    opt.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod()));
+  opt.AddDefaultPolicy(policy =>
+    policy.AllowAnyOrigin()
+          .AllowAnyHeader()
+          .AllowAnyMethod()));
 
-//  EF Core
+// 1) EF Core
 builder.Services.AddDbContext<PaymentDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+  options.UseNpgsql(
+    builder.Configuration.GetConnectionString("DefaultConnection")
+  ));
 
-//  RabbitMQ ConnectionFactory 
-builder.Services.AddSingleton<IConnectionFactory>(_ =>
-    new ConnectionFactory
+// 2) RabbitMQ – config’den okumak için
+var rabbit = builder.Configuration.GetSection("RabbitMQ");
+
+
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+{
+    var cfg = sp.GetRequiredService<IConfiguration>();
+    return new ConnectionFactory
     {
-        //HostName            = "10.47.7.151",
-        HostName            = "localhost",
-        Port                = 5672,
-        UserName            = "guest",
-        Password            = "guest",
+        HostName = cfg.GetValue<string>("RabbitMQ:Host"),
+        Port     = cfg.GetValue<int>("RabbitMQ:Port"),
+        UserName = cfg.GetValue<string>("RabbitMQ:Username"),
+        Password = cfg.GetValue<string>("RabbitMQ:Password"),
         DispatchConsumersAsync = true
-    });
-
-// Hosted Service (consumer)
-//builder.Services.AddHostedService<ReservationCreatedConsumer>();
+    };
+});
 
 
+builder.Services.AddSingleton<IPaymentGateway, RuleBasedPaymentGateway>();
+
+// BookingCreatedConsumer’ı Hosted Service olarak ekle
+builder.Services.AddHostedService<BookingCreatedConsumer>();
+
+
+
+// MVC + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IPaymentGateway, RuleBasedPaymentGateway>();
-
-
 var app = builder.Build();
 
-app.UseCors(); 
+// 4) Startup’da otomatik migrate
+using(var scope = app.Services.CreateScope())
+{
+  var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+  db.Database.Migrate();
+}
+
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
-
 app.MapControllers();
-
-// Optional health‐check or root
 app.MapGet("/", () => "💳 Payment Service is running!");
 
 app.Run();

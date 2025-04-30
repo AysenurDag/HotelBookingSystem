@@ -25,6 +25,12 @@ public class Booking {
     @Schema(description = "Date of check-out", example = "2025-06-05")
     private LocalDate checkOutDate;
 
+    @Schema(description = "Total amount for the booking", example = "750.00")
+    private Double amount;
+
+    @Schema(description = "Currency for the payment", example = "USD")
+    private String currency;
+
     @Enumerated(EnumType.STRING)
     @Schema(description = "Current status of the booking", example = "PENDING")
     private BookingStatus status;
@@ -68,6 +74,22 @@ public class Booking {
 
     public void setCheckOutDate(LocalDate checkOutDate) {
         this.checkOutDate = checkOutDate;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     public BookingStatus getStatus() {

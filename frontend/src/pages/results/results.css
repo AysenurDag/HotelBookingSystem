@@ -1,0 +1,88 @@
+.search-results-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .search-bar-container {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .results-container h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .hotel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .loading, .no-results {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #666;
+  }
+
+ /* src/pages/SearchResults/SearchResults.css */
+/* Add this to your existing CSS */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    padding: 15px 0;
+  }
+  
+  .page-button {
+    background-color: #0071c2;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  .page-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  .page-button:hover:not(:disabled) {
+    background-color: #005999;
+  }
+  
+  .page-info {
+    margin: 0 20px;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .hotel-description {
+    margin: 10px 0;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.4;
+    /* Limit to 3 lines with ellipsis */
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .rating-label {
+    margin-left: 8px;
+    font-size: 14px;
+    color: #333;
+  } 

@@ -5,11 +5,13 @@ import logging
 from config import config
 from database import init_db
 from flask_restx import Api
+from flask_cors import CORS
+
 
 def create_app(config_name='default'):
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(config[config_name])
-    
     # Setup logging
     logging.basicConfig(
         level=logging.INFO,

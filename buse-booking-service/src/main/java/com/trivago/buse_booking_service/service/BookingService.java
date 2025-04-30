@@ -4,7 +4,7 @@ import com.trivago.buse_booking_service.messaging.BookingCreatedEvent;
 import com.trivago.buse_booking_service.messaging.BookingEventProducer;
 import com.trivago.buse_booking_service.messaging.ReservationCancelledEvent;
 import com.trivago.buse_booking_service.messaging.ReservationConfirmedEvent;
-import com.trivago.buse_booking_service.messaging.ReservationCreatedEvent;
+// import com.trivago.buse_booking_service.messaging.ReservationCreatedEvent;
 import com.trivago.buse_booking_service.model.Booking;
 import com.trivago.buse_booking_service.model.BookingStatus;
 import com.trivago.buse_booking_service.repository.BookingRepository;
@@ -27,6 +27,8 @@ public class BookingService {
 
     @Autowired
     private BookingEventProducer eventProducer;
+    @Autowired
+    private BookingHistoryService bookingHistoryService;
 
     // Tüm rezervasyonları getir
     public List<Booking> getAllBookings() {
@@ -43,29 +45,27 @@ public class BookingService {
         return bookingRepository.findByCheckInDateBetweenOrCheckOutDateBetween(start, end, start, end);
     }
 
-    // Yeni rezervasyon oluştur
+    @Autowired
+    private BookingEventProducer bookingEventProducer;
+
     public Booking createBooking(Booking booking) {
-        List<Booking> conflicts = bookingRepository
-                .findByRoomIdAndCheckInDateLessThanEqualAndCheckOutDateGreaterThanEqual(
-                        booking.getRoomId(), booking.getCheckOutDate(), booking.getCheckInDate());
+        // 1. Booking kaydını veritabanına ekle
+        Booking savedBooking = bookingRepository.save(booking);
 
-        if (!conflicts.isEmpty()) {
-            throw new IllegalStateException("This room is already booked for the selected dates.");
-        }
+        // 2. Event oluştur
+        BookingCreatedEvent event = new BookingCreatedEvent(
+                savedBooking.getBookingId().toString(),
+                savedBooking.getUserId(),
+                savedBooking.getAmount(),
+                savedBooking.getCurrency());
 
-        booking.setStatus(BookingStatus.PENDING); // Saga sonrası CONFIRMED olabilir
-        Booking saved = bookingRepository.save(booking);
+        // 3. RabbitMQ'ya gönder
+        bookingEventProducer.sendBookingCreatedEvent(event);
 
-        // ▶️ Event gönder (ReservationCreatedEvent)
-        ReservationCreatedEvent event = new ReservationCreatedEvent(
-                saved.getBookingId(),
-                saved.getRoomId(),
-                saved.getUserId(),
-                saved.getCheckInDate(),
-                saved.getCheckOutDate());
-        eventProducer.sendCreatedEvent(event);
+        // 4. (Varsa) BookingHistory kaydı gibi ekstra işlemleri yap
+        bookingHistoryService.logHistory(savedBooking.getBookingId(), "CREATED");
 
-        return saved;
+        return savedBooking;
     }
 
     // Rezervasyon id'sine göre tek rezervasyonu getir
@@ -155,13 +155,6 @@ public class BookingService {
         eventProducer.sendCancelledEvent(new ReservationCancelledEvent(
                 booking.getBookingId(),
                 reason));
-    }
-
-    // BookingCreatedEvent mesajını dinle
-    @RabbitListener(queues = "booking.created.queue")
-    public void handleBookingCreatedEvent(BookingCreatedEvent event) {
-        System.out.println("[📥] Received Booking Created Event: " + event.getBookingId());
-        // Burada event ile ilgili işlemler yapılabilir
     }
 
     // ReservationCancelledEvent mesajını dinle
