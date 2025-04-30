@@ -17,7 +17,9 @@ class HotelService:
     def get_hotels(self, filters=None, page=1, per_page=10):
         filters = filters or {}
         query = {}
-        
+        print("Filters:", filters)
+        print("Mongo Query:", query)
+
         # Update filter handling to match schema
         if 'city' in filters:
             query['address.city'] = {'$regex': filters['city'], '$options': 'i'}

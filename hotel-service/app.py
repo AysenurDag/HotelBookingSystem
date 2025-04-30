@@ -27,7 +27,7 @@ def create_app(config_name='default'):
         version='1.0',
         title='Hotel Service API',
         description='Hotel service swagger API',
-        doc='/swagger'
+        doc='/'
     )
     
     # Setup all the API routes
@@ -35,7 +35,7 @@ def create_app(config_name='default'):
     setup_routes(api)
     
     # Register the blueprint
-    app.register_blueprint(api_blueprint, url_prefix='/api')
+    app.register_blueprint(api_blueprint)
     
     return app
 
