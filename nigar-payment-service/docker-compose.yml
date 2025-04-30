@@ -1,0 +1,32 @@
+﻿version: '3.9'
+
+services:
+  nigar-payment-service:
+    image: nigar-payment-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000"
+    environment:
+      - RABBITMQ_HOST=10.47.7.151
+      - RABBITMQ_PORT=5672
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres_payment;Port=5432;Database=paymentdb;Username=admin;Password=admin123
+    depends_on:
+      - postgres_payment
+
+  postgres_payment:
+    image: postgres
+    container_name: postgres_payment
+    environment:
+      POSTGRES_DB: paymentdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - payment_pgdata:/var/lib/postgresql/data
+
+volumes:
+  payment_pgdata:

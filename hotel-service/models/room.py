@@ -1,36 +1,36 @@
-from datetime import datetime
+from flask_restx import fields
 
-class Room:
-    def __init__(self, hotel_id, room_number, room_type, capacity, price_per_night,
-                 beds=None, amenities=None, accessibility_features=None, 
-                 status="available", images=None, size_sqm=None):
-        self.hotel_id = hotel_id
-        self.room_number = room_number
-        self.room_type = room_type  # e.g., "standard", "deluxe", "suite"
-        self.capacity = capacity  # max number of guests
-        self.price_per_night = price_per_night
-        self.beds = beds or []  # e.g., [{"type": "queen", "count": 1}, {"type": "single", "count": 1}]
-        self.amenities = amenities or []
-        self.accessibility_features = accessibility_features or []
-        self.status = status  # "available", "occupied", "maintenance"
-        self.images = images or []
-        self.size_sqm = size_sqm
-        self.created_at = datetime.utcnow()
-        self.updated_at = self.created_at
-        
-    def to_dict(self):
-        return {
-            "hotel_id": self.hotel_id,
-            "room_number": self.room_number,
-            "room_type": self.room_type,
-            "capacity": self.capacity,
-            "price_per_night": self.price_per_night,
-            "beds": self.beds,
-            "amenities": self.amenities,
-            "accessibility_features": self.accessibility_features,
-            "status": self.status,
-            "images": self.images,
-            "size_sqm": self.size_sqm,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
-        }
+def get_room_model(api):
+    """
+    Define the Room model for Swagger documentation
+    """
+    return api.model('Room', {
+        'id': fields.String(readonly=True, description='Room identifier'),
+        'hotel_id': fields.String(required=True, description='Hotel identifier'),
+        'room_type': fields.String(required=True, description='Type of room'),
+        'name': fields.String(required=True, description='Name of the room'),
+        'description': fields.String(description='Room description'),
+        'price': fields.Float(required=True, description='Room price per night'),
+        'capacity': fields.Integer(required=True, description='Room capacity'),
+        'amenities': fields.List(fields.String, description='List of room amenities'),
+        'images': fields.List(fields.String, description='List of room image URLs'),
+        'status': fields.String(description='Room availability status'),
+        'created_at': fields.DateTime(readonly=True, description='Creation timestamp'),
+        'updated_at': fields.DateTime(readonly=True, description='Last update timestamp')
+    })
+
+def get_room_list_model(api):
+    """
+    Define the Room list model with pagination for Swagger documentation
+    """
+    pagination_model = api.model('RoomPaginationMeta', {
+        'page': fields.Integer(description='Current page number'),
+        'per_page': fields.Integer(description='Items per page'),
+        'total': fields.Integer(description='Total number of items'),
+        'hotel_id': fields.String(description='Hotel identifier for the rooms')
+    })
+    
+    return api.model('RoomList', {
+        'data': fields.List(fields.Nested(get_room_model(api)), description='List of rooms'),
+        'meta': fields.Nested(pagination_model, description='Pagination metadata')
+    })

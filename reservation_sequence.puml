@@ -1,0 +1,22 @@
+@startuml reservation_sequence
+actor User
+
+participant "ReservationService (Conductor)" as RS
+participant "UserService" as US
+participant "HotelService" as HS
+participant "PaymentService" as PS
+
+User -> RS : Create Reservation Request
+
+RS -> US : VerifyUserIdentity
+RS -> HS : CheckHotelAvailability
+RS -> PS : ProcessPayment
+
+alt Payment Success
+  RS -> RS : Update Reservation to CONFIRMED
+  RS -> User : Reservation Confirmed
+else Payment Failed
+  RS -> RS : Update Reservation to CANCELLED
+  RS -> User : Payment Failed / Reservation Cancelled
+end
+@enduml
