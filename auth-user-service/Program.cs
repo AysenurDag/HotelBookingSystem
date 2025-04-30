@@ -6,9 +6,8 @@ using auth_user_service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,28 +27,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<AuthUserDbContext>()
     .AddDefaultTokenProviders();
 
-// 3) JWT Authentication
-var jwtSection = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.UTF8.GetBytes(jwtSection["SecretKey"]!);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSection["Issuer"],
-        ValidAudience = jwtSection["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
-});
+// 3) Microsoft Entra ID Authentication (sadece bunu bırakıyoruz)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
 // 4) Authorization
 builder.Services.AddAuthorization(options =>
@@ -59,12 +39,10 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddScoped<EmailService>();
 
-
-// 5) Uygulama içi servis/repository bağımlılıkları
+// 5) Repositories / Services
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
-builder.Services.AddScoped<ITokenService, TokenService>();
 
-// 6) Controller + Swagger
+// 6) Controllers + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -75,7 +53,6 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 
-    // Swagger'da JWT desteği
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -113,11 +90,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthUserService v1");
-    // Swagger anasayfada açılsın istersen:
-    // c.RoutePrefix = string.Empty;
 });
-
-app.MapControllers();
 
 // 9) Rolleri otomatik oluştur
 using (var scope = app.Services.CreateScope())
@@ -137,4 +110,5 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.MapControllers();
 app.Run();

@@ -11,7 +11,6 @@ namespace auth_user_service.Data
         {
         }
 
-        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!; 
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
