@@ -1,4 +1,66 @@
 # HotelBookingSystem
+This project implements a hotel management system using a microservices-based architecture. The system is designed to manage hotel listings, room bookings, user authentication, and payments with strong consistency and failure recovery using the Saga Pattern.
+
+---
+
+## 🧩 Services Overview
+
+### 🔐 Authentication Service
+- **UserAggregate**: Manages user profiles, credentials, and authentication tokens.
+
+---
+
+### 🏨 Hotel Service
+- **HotelAggregate**: Contains hotel details, amenities, location, ratings, and policies.
+- **RoomTypeAggregate**: Manages room categories, features, base pricing, and images.
+- **RoomInventoryAggregate**: Handles available rooms by date range, pricing rules, and availability status.
+
+---
+
+### 📆 Booking Service
+- **BookingAggregate**: Stores reservation details, guest information, booking status (confirmed, pending, canceled), and booking history.
+- **ReservationAggregate**: Manages room allocation, check-in/check-out dates, and special requests.
+
+---
+
+### 💳 Payment Service
+- **PaymentAggregate**: Tracks payment details, payment status, transaction history, and refund information.
+- **InvoiceAggregate**: Contains itemized charges, taxes, discounts, and final pricing.
+
+---
+
+## 🔁 Booking Saga Flow
+
+The **Saga Pattern** is used to handle distributed transactions across services with compensation logic for failure scenarios.
+
+### Step 1: Initiate Booking (Booking Service)
+- User selects room and dates.
+- Booking service creates a **pending booking record**.
+
+### Step 2: Verify Room Availability (Hotel Service)
+- Booking service requests room availability check.
+- Hotel service verifies and **temporarily reserves** the room.
+
+🛑 **Compensation**: If the booking fails, release the room reservation.
+
+### Step 3: Process Payment (Payment Service)
+- Booking service sends a request to process the payment.
+- Payment service **authorizes the payment**.
+
+🛑 **Compensation**: If the booking fails later, the payment is **voided or refunded**.
+
+### Step 4: Confirm Booking (Booking Service)
+- Upon successful payment:
+  - Booking service **confirms the reservation**.
+  - Hotel service **updates room inventory**.
+  - Payment service **captures the authorized payment**.
+  - Booking service **sends confirmation** to the user.
+
+---
+
+## ⚠️ Failure Handling
+- Each step of the saga includes **compensation logic** to maintain system consistency.
+- A **Saga Orchestrator** tracks the process and triggers compensating actions when necessary.
 
 ## Ozge's notes
 
@@ -6,6 +68,46 @@
 
 ## Nıgar's notes
 
+I have implemented the **SAGA pattern** for handling the `ReservationCreatedEvent` in the **Payment Service**. The process simulates a payment transaction with success and failure scenarios. A consumer listens for the `ReservationCreatedEvent` and triggers the payment logic. Depending on the result, either a `PaymentSucceededEvent` or `PaymentFailedEvent` is published.
+
+### Key Features
+
+1. **ReservationCreatedEvent Handling:**
+   - **Aggregate**: `PaymentAggregate` handles the domain events.
+   - On receiving the `ReservationCreatedEvent`, the payment process is triggered.
+   - The payment process is simulated, with a 50% chance of success or failure. Based on the result:
+     - If successful: A `PaymentSucceededEvent` is published.
+     - If failed: A `PaymentFailedEvent` is published.
+
+2. **Test Consumer for Payment Simulation:**
+   - A consumer (`ReservationCreatedConsumer`) listens to the `ReservationCreatedEvent`.
+   - Upon receiving the event, it simulates the payment process and logs the success or failure.
+   - The result of the simulation triggers either the `PaymentSucceededEvent` or `PaymentFailedEvent`.
+
+3. **Message-Based Communication:**
+   - **RabbitMQ** is used for event messaging between services:
+     - **BookingService** sends the `ReservationCreatedEvent` to the `reservationQueue`.
+     - **PaymentService** consumes the event and simulates payment processing.
+
+
+### **Expected Response:**
+
+```bash
+{
+  "id": 1,
+  "hotelId": "hotel-123",
+  "userId": "user-456",
+  "checkInDate": "2025-05-01",
+  "checkOutDate": "2025-05-05"
+}
+```
+This will trigger the payment simulation, if payment is successful:
+```bash
+📩 ReservationReceived: ID 1, Hotel: hotel-123
+💳 Processing payment for User: user-456, Hotel: hotel-123
+✅ Payment successful for reservation ID: 1
+📤 Event published to payment_succeeded: {"reservationId":1,"userId":"user-456","hotelId":"hotel-123"}
+```
 ## Buse's notes
 
 I implemented a test **SAGA pattern** for handling the **ReservationCreatedEvent** in the **Booking Service**. This process simulates a payment transaction with success and failure scenarios. Additionally, the test consumer was created to simulate the payment process, and necessary Docker containers for MySQL and RabbitMQ were set up.Nigar will continue for payment.
