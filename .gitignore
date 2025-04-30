@@ -1,2 +1,16 @@
+# .NET build artifacts
 **/bin/
 **/obj/
+
+# Node.js dependencies
+**/node_modules/
+
+# Python virtual env
+venv/
+**/venv/
+
+# IDE ayarları
+.vscode/
+.idea/
+*.suo
+*.user
