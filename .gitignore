@@ -1,3 +1,4 @@
+
 # .NET build artifacts
 **/bin/
 **/obj/
@@ -14,3 +15,6 @@ venv/
 .idea/
 *.suo
 *.user
+
+venv/
+
