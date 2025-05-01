@@ -4,6 +4,7 @@ using auth_user_service.Models;
 using auth_user_service.Repositories;
 using auth_user_service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
@@ -47,20 +48,25 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthUserService API", Version = "v1" });
+
+    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
-        Title = "AuthUserService API",
-        Version = "v1"
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri($"{builder.Configuration["AzureAd:Instance"]}{builder.Configuration["AzureAd:TenantId"]}/oauth2/v2.0/authorize"),
+                TokenUrl = new Uri($"{builder.Configuration["AzureAd:Instance"]}{builder.Configuration["AzureAd:TenantId"]}/oauth2/v2.0/token"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { builder.Configuration["AzureAd:Scopes"]!, "Access Auth API" }
+                }
+            }
+        }
     });
 
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "JWT Bearer token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = JwtBearerDefaults.AuthenticationScheme
-    });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -69,13 +75,14 @@ builder.Services.AddSwaggerGen(c =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id = "oauth2"
                 }
             },
-            new string[] {}
+            new[] { builder.Configuration["AzureAd:Scopes"]! }
         }
     });
 });
+
 
 var app = builder.Build();
 
@@ -90,6 +97,10 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthUserService v1");
+
+    c.OAuthClientId(builder.Configuration["AzureAd:ClientId"]);
+    c.OAuthUsePkce();
+    c.OAuthScopeSeparator(" ");
 });
 
 // 9) Rolleri otomatik oluştur
