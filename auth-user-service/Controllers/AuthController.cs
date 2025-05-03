@@ -6,6 +6,8 @@ using auth_user_service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace auth_user_service.Controllers
 {
@@ -16,16 +18,18 @@ namespace auth_user_service.Controllers
         private readonly IApplicationUserRepository _userRepo;
         private readonly IConfiguration _config;
         private readonly UserManager<ApplicationUser> _userManager;
-        private static Dictionary<string, string> _pending2FACodes = new();
+        private readonly IMemoryCache _cache;
 
         public AuthController(
             IApplicationUserRepository userRepo,
             IConfiguration config,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IMemoryCache cache)
         {
             _userRepo = userRepo;
             _config = config;
             _userManager = userManager;
+            _cache = cache;
         }
 
         [HttpPost("register")]
@@ -68,6 +72,10 @@ namespace auth_user_service.Controllers
             return Ok("Registration successful. Please check your email to confirm your account.");
         }
 
+
+
+        /*
+         
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto, [FromServices] EmailService emailService)
         {
@@ -79,31 +87,39 @@ namespace auth_user_service.Controllers
                 //return BadRequest("E-posta adresiniz henüz onaylanmamış.");
 
             var code = new Random().Next(100000, 999999).ToString();
-            _pending2FACodes[dto.Email] = code;
+            _cache.Set(dto.Email, code, TimeSpan.FromMinutes(5));
 
             await emailService.SendEmailAsync(dto.Email, "Your 2FA Code", $"Your verification code is: {code}");
 
             return Ok("2FA code sent to your email address.");
         }
+         
+         */
+
+        /*
 
 
-        [HttpPost("verify-2fa")]
-        public async Task<IActionResult> Verify2FA([FromBody] Verify2FADto dto)
-        {
-            if (!_pending2FACodes.ContainsKey(dto.Email))
-                return BadRequest("No pending 2FA request for this email");
+         [HttpPost("verify-2fa")]
+       public async Task<IActionResult> Verify2FA([FromBody] Verify2FADto dto)
+       {
+           if (!_cache.TryGetValue(dto.Email, out string? expectedCode))
+               return BadRequest("No pending 2FA request for this email");
 
-            if (_pending2FACodes[dto.Email] != dto.Code)
-                return Unauthorized("Invalid 2FA code");
+           if (expectedCode != dto.Code)
+               return Unauthorized("Invalid 2FA code");
 
-            _pending2FACodes.Remove(dto.Email);
+           _cache.Remove(dto.Email);
 
-            var user = await _userRepo.FindByEmailAsync(dto.Email);
-            if (user == null)
-                return Unauthorized();
+           var user = await _userRepo.FindByEmailAsync(dto.Email);
+           if (user == null)
+               return Unauthorized();
 
-            return Ok("2FA verified. You can now use your Azure access token.");
-        }
+           return Ok("2FA verified. You can now use your Azure access token.");
+       }
+
+
+         */
+
 
         [HttpPost("change-password")]
         [Authorize]
@@ -189,12 +205,20 @@ namespace auth_user_service.Controllers
         [Authorize]
         public IActionResult GetCurrentUser()
         {
-            var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("preferred_username")?.Value;
+            var name = User.Identity?.Name;
+            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
-            return Ok(new { id, email, roles });
+            return Ok(new
+            {
+                userId,
+                email,
+                name,
+                roles
+            });
         }
+
 
         [HttpGet("all-users")]
         [Authorize(Roles = "Admin")]
@@ -203,5 +227,12 @@ namespace auth_user_service.Controllers
             var users = await _userRepo.GetAllAsync();
             return Ok(users.Select(u => new { u.Id, u.Email, u.Name, u.Surname }));
         }
+
+        [HttpGet("test-public")]
+        public IActionResult TestPublic()
+        {
+            return Ok("Public endpoint erişildi");
+        }
+
     }
 }

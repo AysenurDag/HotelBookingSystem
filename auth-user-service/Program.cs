@@ -4,7 +4,6 @@ using auth_user_service.Models;
 using auth_user_service.Repositories;
 using auth_user_service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
@@ -15,35 +14,46 @@ var builder = WebApplication.CreateBuilder(args);
 // 1) DbContext
 builder.Services.AddDbContext<AuthUserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 2) Redis
 builder.Services.AddSingleton<RedisService>();
 
-
-// 2) Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-{
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 6;
-    // Diğer parola kuralları
-})
+// 3) IdentityCore: sadece EF tabanlı User/Role, cookie middleware yüklemez
+builder.Services
+    .AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 6;
+        // … diğer parola kuralları
+    })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthUserDbContext>()
     .AddDefaultTokenProviders();
 
-// 3) Microsoft Entra ID Authentication (sadece bunu bırakıyoruz)
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+// 4) Authentication: Default scheme olarak JWT Bearer (hem Authenticate hem Challenge)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-// 4) Authorization
+// 5) Authorization (rol tabanlı politika)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdmin", policy =>
         policy.RequireRole("Admin"));
 });
+
+// 6) Diğer servisler
 builder.Services.AddScoped<EmailService>();
-
-// 5) Repositories / Services
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
+builder.Services.AddMemoryCache();
 
-// 6) Controllers + Swagger
+// 7) Controllers + Swagger
+var azureAd = builder.Configuration.GetSection("AzureAd");
+var scopeUri = azureAd["Scopes"];  // örn. "api://<ClientId>/access_as_user"
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -57,12 +67,9 @@ builder.Services.AddSwaggerGen(c =>
         {
             AuthorizationCode = new OpenApiOAuthFlow
             {
-                AuthorizationUrl = new Uri($"{builder.Configuration["AzureAd:Instance"]}{builder.Configuration["AzureAd:TenantId"]}/oauth2/v2.0/authorize"),
-                TokenUrl = new Uri($"{builder.Configuration["AzureAd:Instance"]}{builder.Configuration["AzureAd:TenantId"]}/oauth2/v2.0/token"),
-                Scopes = new Dictionary<string, string>
-                {
-                    { builder.Configuration["AzureAd:Scopes"]!, "Access Auth API" }
-                }
+                AuthorizationUrl = new Uri($"{azureAd["Instance"]}{azureAd["TenantId"]}/oauth2/v2.0/authorize"),
+                TokenUrl = new Uri($"{azureAd["Instance"]}{azureAd["TenantId"]}/oauth2/v2.0/token"),
+                Scopes = new Dictionary<string, string> { { scopeUri, "Access Auth API" } }
             }
         }
     });
@@ -70,56 +77,42 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "oauth2"
-                }
-            },
-            new[] { builder.Configuration["AzureAd:Scopes"]! }
+            new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" } },
+            new[] { scopeUri }
         }
     });
 });
 
-
 var app = builder.Build();
 
-// 7) Middleware sıralaması
+// 8) Middleware sıralaması
 app.UseRouting();
 app.UseMiddleware<TokenBlacklistMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 8) Swagger
+// 9) Swagger + PKCE destekli authorize butonu
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthUserService v1");
-
-    c.OAuthClientId(builder.Configuration["AzureAd:ClientId"]);
+    c.OAuthClientId(azureAd["ClientId"]);
     c.OAuthUsePkce();
     c.OAuthScopeSeparator(" ");
 });
 
-// 9) Rolleri otomatik oluştur
+// 10) Rolleri otomatik oluştur
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
     string[] roles = { "Admin", "User", "HotelOwner" };
-
     foreach (var role in roles)
     {
-        var roleExists = await roleManager.RoleExistsAsync(role);
-        if (!roleExists)
-        {
+        if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
-            Console.WriteLine($"'{role}' rolü başarıyla oluşturuldu.");
-        }
     }
 }
 
+// 11) Controller’ları eşle ve çalıştır
 app.MapControllers();
 app.Run();
