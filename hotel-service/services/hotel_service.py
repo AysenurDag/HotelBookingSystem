@@ -17,7 +17,9 @@ class HotelService:
     def get_hotels(self, filters=None, page=1, per_page=10):
         filters = filters or {}
         query = {}
-        
+        print("Filters:", filters)
+        print("Mongo Query:", query)
+
         # Update filter handling to match schema
         if 'city' in filters:
             query['address.city'] = {'$regex': filters['city'], '$options': 'i'}
@@ -65,9 +67,9 @@ class HotelService:
                     return {'error': f'Missing required field: {field}', 'status_code': 400}
             
             # Validate address structure
-            address_fields = ['street', 'city', 'country']
-            if not all(field in hotel_data['address'] for field in address_fields):
-                return {'error': f'Address must include {", ".join(address_fields)}', 'status_code': 400}
+            # address_fields = ['street', 'city', 'country']
+            # if not all(field in hotel_data['address'] for field in address_fields):
+            #     return {'error': f'Address must include {", ".join(address_fields)}', 'status_code': 400}
             
             # Validate rating range
             if not (1 <= hotel_data['rating'] <= 5):

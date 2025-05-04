@@ -1,16 +1,62 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-venv/
+
+# Environment
 .env
+.env.*
+venv/
+.venv/
+ENV/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Debug and development tools
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.coverage
+coverage.xml
+*.prof
+*.pid
+*.tmp
 
 # Docker
 .dockerignore
+Dockerfile
+docker-compose.yml
+*.tar
+*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints
 
 # Editors
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
 
 # MongoDB
 data/
+
+# Test and cache
+.cache/
+.pytest_cache/
+nosetests.xml
+test-results/
+
+# MyPy, Pyre, Pytype
+.mypy_cache/
+.pytype/
+.pyre/

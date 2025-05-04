@@ -1,4 +1,3 @@
-// src/hooks/useHotelSearch.js
 import { useState, useEffect } from 'react';
 import { searchHotels } from '../services/hotelService';
 
@@ -17,9 +16,7 @@ const useHotelSearch = (initialSearchParams) => {
     total: 0
   });
 
-  // Function to update search parameters
   const updateSearch = (newParams) => {
-    // Reset to page 1 when search criteria changes
     if (Object.keys(newParams).some(key => key !== 'page' && key !== 'perPage')) {
       setSearchParams(prev => ({ ...prev, ...newParams, page: 1 }));
     } else {
@@ -27,12 +24,10 @@ const useHotelSearch = (initialSearchParams) => {
     }
   };
 
-  // Function to handle pagination
   const goToPage = (page) => {
     updateSearch({ page });
   };
 
-  // Fetch hotels when search parameters change
   useEffect(() => {
     const fetchHotels = async () => {
       setLoading(true);
@@ -41,7 +36,6 @@ const useHotelSearch = (initialSearchParams) => {
       try {
         const response = await searchHotels(searchParams);
         
-        // Extract data and pagination info from the response
         const { data, meta } = response;
         
         setHotels(data || []);

@@ -68,13 +68,13 @@ class RoomService:
             if not hotel:
                 return {'error': 'Hotel not found', 'status_code': 404}
                 
-            # Check if room with same number exists in the hotel
-            existing = self.db.rooms.find_one({
-                'hotel_id': room_data['hotel_id'],
-                'room_number': room_data['room_number']
-            })
-            if existing:
-                return {'error': 'Room with this number already exists in this hotel', 'status_code': 409}
+            # # Check if room with same number exists in the hotel
+            # existing = self.db.rooms.find_one({
+            #     'hotel_id': room_data['hotel_id'],
+            #     'room_number': room_data['room_number']
+            # })
+            # if existing:
+            #     return {'error': 'Room with this number already exists in this hotel', 'status_code': 409}
             
             # Add timestamps
             room_data['created_at'] = datetime.utcnow()
