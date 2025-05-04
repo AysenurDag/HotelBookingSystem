@@ -67,9 +67,9 @@ class HotelService:
                     return {'error': f'Missing required field: {field}', 'status_code': 400}
             
             # Validate address structure
-            address_fields = ['street', 'city', 'country']
-            if not all(field in hotel_data['address'] for field in address_fields):
-                return {'error': f'Address must include {", ".join(address_fields)}', 'status_code': 400}
+            # address_fields = ['street', 'city', 'country']
+            # if not all(field in hotel_data['address'] for field in address_fields):
+            #     return {'error': f'Address must include {", ".join(address_fields)}', 'status_code': 400}
             
             # Validate rating range
             if not (1 <= hotel_data['rating'] <= 5):
