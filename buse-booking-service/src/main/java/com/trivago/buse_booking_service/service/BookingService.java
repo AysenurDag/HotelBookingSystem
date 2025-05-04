@@ -4,7 +4,7 @@ import com.trivago.buse_booking_service.messaging.BookingCreatedEvent;
 import com.trivago.buse_booking_service.messaging.BookingEventProducer;
 import com.trivago.buse_booking_service.messaging.ReservationCancelledEvent;
 import com.trivago.buse_booking_service.messaging.ReservationConfirmedEvent;
-import com.trivago.buse_booking_service.messaging.ReservationCreatedEvent;
+// import com.trivago.buse_booking_service.messaging.ReservationCreatedEvent;
 import com.trivago.buse_booking_service.model.Booking;
 import com.trivago.buse_booking_service.model.BookingStatus;
 import com.trivago.buse_booking_service.repository.BookingRepository;

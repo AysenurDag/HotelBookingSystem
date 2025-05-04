@@ -1,0 +1,114 @@
+#############################
+# Global (OS + IDE)
+#############################
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# JetBrains Rider / IntelliJ / Eclipse
+.idea/
+*.iml
+
+# Visual Studio kullanıcı ayarları
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+#############################
+# Python / Flask
+#############################
+# sanal ortamlar
+venv/
+env/
+.venv/
+__pypackages__/
+
+# cache + derlenmiş .pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pip
+pip-log.txt
+
+# test & coverage
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# paket dağıtımı
+build/
+dist/
+*.egg-info/
+
+#############################
+# Java / Spring Boot
+#############################
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+build/
+!gradlew
+!gradlew.bat
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# IntelliJ
+out/
+# Eclipse
+.classpath
+.project
+.settings/
+
+#############################
+# .NET (Core / Framework)
+#############################
+# Build outputs
+**/[Bb]in/
+**/[Oo]bj/
+**/[Rr]elease*/
+**/[Dd]ebug*/
+
+# paketler
+*.nupkg
+packages/
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+
+# Rider cache
+_ReSharper*/
+*.DotSettings
+
+# VS yayın / IIS Express
+.vs/
+*.Publish.xml
+*.publishsettings
+
+#############################
+# Diğer
+#############################
+# Log ve temp
+*.log
+*.tmp
+
+# IDE tarafından oluşturulan docs, vs.
+*.class
+*.jar
+*.war
+*.ear
+*.db
+
+# .NET build outputs
+**/bin/
+**/obj/
+
