@@ -22,7 +22,7 @@ room_list_model = get_room_list_model(hotel_ns)
 # Create parsers for query parameters
 hotel_parser = reqparse.RequestParser()
 hotel_parser.add_argument('city', type=str, help='Filter by city')
-hotel_parser.add_argument('rating', type=float, help='Filter by minimum rating')
+hotel_parser.add_argument('rating', type=int, help='Filter by minimum rating')
 hotel_parser.add_argument('page', type=int, default=1, help='Page number')
 hotel_parser.add_argument('per_page', type=int, default=10, help='Items per page')
 
