@@ -5,23 +5,26 @@ const useHotelSearch = (initialSearchParams) => {
   const [searchParams, setSearchParams] = useState({
     ...initialSearchParams,
     page: 1,
-    perPage: 10
+    perPage: 10,
   });
+
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     perPage: 10,
-    total: 0
+    total: 0,
   });
 
   const updateSearch = (newParams) => {
-    if (Object.keys(newParams).some(key => key !== 'page' && key !== 'perPage')) {
-      setSearchParams(prev => ({ ...prev, ...newParams, page: 1 }));
-    } else {
-      setSearchParams(prev => ({ ...prev, ...newParams }));
-    }
+    const resetPage =
+      Object.keys(newParams).some((key) => key !== 'page' && key !== 'perPage');
+    setSearchParams((prev) => ({
+      ...prev,
+      ...newParams,
+      page: resetPage ? 1 : newParams.page || prev.page,
+    }));
   };
 
   const goToPage = (page) => {
@@ -32,17 +35,15 @@ const useHotelSearch = (initialSearchParams) => {
     const fetchHotels = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
-        const response = await searchHotels(searchParams);
-        
-        const { data, meta } = response;
-        
-        setHotels(data || []);
+        const [fetchedHotels, total] = await searchHotels(searchParams);
+
+        setHotels(fetchedHotels || []);
         setPagination({
-          page: meta?.page || 1,
-          perPage: meta?.per_page || 10,
-          total: meta?.total || 0
+          page: searchParams.page,
+          perPage: searchParams.perPage,
+          total: total || 0,
         });
       } catch (err) {
         setError(err.message || 'Failed to fetch hotels');
@@ -62,7 +63,7 @@ const useHotelSearch = (initialSearchParams) => {
     loading,
     error,
     pagination,
-    goToPage
+    goToPage,
   };
 };
 
