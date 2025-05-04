@@ -1,18 +1,26 @@
-version: "3.8"
-
+# version kaldırıldı
 services:
+  # RabbitMQ (shared message broker)
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - microservices-network
 
+  # Booking Database (MySQL)
   booking-db:
     image: mysql:8.0
     container_name: booking-db
@@ -26,7 +34,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - booking_db_data:/var/lib/mysql
+    networks:
+      - microservices-network
 
+  # Payment Database (PostgreSQL)
   payment-db:
     image: postgres:15
     container_name: payment-db
@@ -41,10 +54,27 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
 
+  # Hotel Database (MongoDB)
+  mongodb:
+    image: mongo:latest
+    container_name: hotel-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - microservices-network
+
+  # Booking Service (Spring Boot)
   booking-service:
     build:
       context: ./buse-booking-service
+    container_name: booking-service
     depends_on:
       booking-db:
         condition: service_healthy
@@ -54,7 +84,10 @@ services:
       - "8081:8080"
     environment:
       SPRING_PROFILES_ACTIVE: default
+    networks:
+      - microservices-network
 
+  # Payment Service (.NET)
   payment-service:
     build: ./nigar-payment-service
     container_name: payment-service
@@ -73,3 +106,39 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
+    networks:
+      - microservices-network
+
+  # Hotel Service (Flask)
+  hotel-service:
+    build: 
+      context: ./hotel-service
+      dockerfile: Dockerfile
+    container_name: hotel-service
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/hotel_db
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+    volumes:
+      - ./hotel-service:/app
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  booking_db_data:
+  payment_db_data:
+  mongodb_data:
+  rabbitmq_data:

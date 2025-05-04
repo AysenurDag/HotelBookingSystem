@@ -1,5 +1,4 @@
-version: '3.8'
-
+# version artık gerekli değil, kaldırıldı
 services:
   app:
     build: .
@@ -15,6 +14,8 @@ services:
     depends_on:
       - mongodb
       - rabbitmq
+    networks:
+      - microservices-network  # Network'e eklendi
   
   mongodb:
     image: mongo:latest
@@ -22,6 +23,8 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - microservices-network  # Network'e eklendi
   
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -31,6 +34,13 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - microservices-network  # Network'e eklendi
+
+# Network tanımı eklendi
+networks:
+  microservices-network:
+    driver: bridge
 
 volumes:
   mongodb_data:
