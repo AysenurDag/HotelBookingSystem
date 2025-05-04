@@ -15,5 +15,6 @@ namespace nigar_payment_service.DbContext
         
         
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<PaymentHistory> PaymentHistories { get; set; }
     }
 }

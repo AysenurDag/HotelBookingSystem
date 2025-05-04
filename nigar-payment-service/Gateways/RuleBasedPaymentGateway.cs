@@ -45,7 +45,7 @@ namespace nigar_payment_service.Gateways
             var finalStatus = PaymentStatus.Success;
             string? reason = null;
 
-            if (dto.Amount > 1000m)
+            if (dto.Amount > 10000m)
             {
                 finalStatus = PaymentStatus.Failed;
                 reason = "Amount exceeds limit";
@@ -66,7 +66,7 @@ namespace nigar_payment_service.Gateways
             var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
 
             var payment = await db.Payments
-                                  .SingleAsync(p => p.CorrelationId == dto.CorrelationId);
+                                .SingleAsync(p => p.CorrelationId == dto.CorrelationId);
 
             payment.Status = finalStatus;
             payment.UpdatedAt = DateTime.UtcNow;
@@ -85,7 +85,7 @@ namespace nigar_payment_service.Gateways
                 {
                     BookingId = dto.BookingId,
                     PaymentId     = payment.Id,
-                   
+                
                 }
                 : new PaymentFailedEvent
                 {
