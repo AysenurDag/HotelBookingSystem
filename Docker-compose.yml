@@ -76,10 +76,8 @@ services:
       context: ./buse-booking-service
     container_name: booking-service
     depends_on:
-      booking-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      - booking-db
+      - rabbitmq
     ports:
       - "8081:8080"
     environment:

@@ -66,6 +66,49 @@ The **Saga Pattern** is used to handle distributed transactions across services 
 
 ## Aysenur's notes
 
+I have implemented the **authentication and authorization system** for handling secure access in the **Auth User Service**. The service manages user registration, login, JWT token generation, and role-based access control. It provides essential security infrastructure for the overall microservices ecosystem.
+
+### Key Features
+
+1. **User Registration and Authentication:**
+   - Implemented user registration with secure password hashing using **ASP.NET Core Identity**.
+   - Built a login mechanism that issues **JWT access tokens** and **refresh tokens**.
+   - Stored user data securely using **Entity Framework Core** with a dedicated **AuthUserDbContext**.
+
+2. **JWT Token Management:**
+   - Generated **access tokens** that include user claims (ID, email, roles).
+   - Supported **refresh tokens** to allow users to renew their session without re-authenticating.
+   - Validated tokens using issuer, audience, expiration, and secret key validation.
+
+3. **Role-Based Access Control (RBAC):**
+   - Enabled assigning roles (e.g., "Admin", "User") to users during or after registration.
+   - Restricted access to certain API endpoints based on assigned user roles.
+
+4. **Event-Driven Architecture Support:**
+   - Integrated **RabbitMQ** to publish user registration events for further processing by other services.
+   - Promoted loose coupling and asynchronous communication across microservices.
+
+5. **API Documentation:**
+   - Configured **Swagger/OpenAPI** for clear and interactive API documentation.
+
+6. **Security Best Practices:**
+   - Enforced password policies: minimum length, complexity, and character types.
+   - Implemented token expiration and refresh workflows to enhance security.
+
+### **Expected Response (User Registration):**
+
+```bash
+{
+  "id": "user-guid",
+  "email": "user@example.com",
+  "roles": ["User"]
+}
+```
+This will trigger an event that can be consumed by other services if necessary:
+```bash
+📩 UserRegisteredEvent published: ID user-guid, Email user@example.com
+```
+
 ## Nıgar's notes
 
 I have implemented the **SAGA pattern** for handling the `ReservationCreatedEvent` in the **Payment Service**. The process simulates a payment transaction with success and failure scenarios. A consumer listens for the `ReservationCreatedEvent` and triggers the payment logic. Depending on the result, either a `PaymentSucceededEvent` or `PaymentFailedEvent` is published.
