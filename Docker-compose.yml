@@ -45,15 +45,27 @@ services:
   booking-service:
     build:
       context: ./buse-booking-service
+    container_name: booking-service
+    # depends_on sadece sıralama yapar, health durumunu beklemez:
     depends_on:
-      booking-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      - booking-db
+      - rabbitmq
     ports:
       - "8081:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: default
+      # aktif profile (isteğe bağlı)
+      - SPRING_PROFILES_ACTIVE=default
+      # veritabanı bağlantı ayarları
+      - SPRING_DATASOURCE_URL=jdbc:mysql://booking-db:3306/booking_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123456
+      # RabbitMQ bağlantı
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    # restart policy: hata alırsa yeniden denesin
+    restart: on-failure
 
   payment-service:
     build: ./nigar-payment-service
