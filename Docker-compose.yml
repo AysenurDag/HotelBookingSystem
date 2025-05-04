@@ -130,6 +130,20 @@ services:
       - rabbitmq
     networks:
       - microservices-network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react-frontend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - microservices-network    
 
 networks:
   microservices-network:
