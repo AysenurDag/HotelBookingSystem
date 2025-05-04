@@ -23,19 +23,8 @@ pagination_parser.add_argument('per_page', type=int, default=10, help='Items per
 
 hotel_parser = pagination_parser.copy()
 hotel_parser.add_argument('city', type=str, help='Filter by city')
-hotel_parser.add_argument('rating', type=float, help='Filter by minimum rating')
-
-room_parser = pagination_parser.copy()
-room_parser.replace_argument('per_page', type=int, default=20)
-room_parser.add_argument('room_type', type=str)
-room_parser.add_argument('min_price', type=float)
-room_parser.add_argument('max_price', type=float)
-room_parser.add_argument('capacity', type=int)
-room_parser.add_argument('status', type=str)
-
-location_parser = pagination_parser.copy()
-location_parser.add_argument('city', type=str)
-location_parser.add_argument('country', type=str)
+hotel_parser.add_argument('country', type=str, help='Filter by country')
+hotel_parser.add_argument('rating', type=int, help='Filter by minimum rating')
 
 # --- Utility function ---
 def extract_filters(args, allowed_keys):
@@ -43,7 +32,7 @@ def extract_filters(args, allowed_keys):
 
 # --- Controllers ---
 
-@hotel_ns.route('')
+@hotel_ns.route('/getHotels')
 class HotelList(Resource):
     @hotel_ns.doc('list_hotels', description='List all hotels with optional city/rating filters and pagination')
     @hotel_ns.expect(hotel_parser)
@@ -53,8 +42,13 @@ class HotelList(Resource):
         filters = extract_filters(args, ['city', 'rating'])
         page, per_page = args['page'], args['per_page']
         hotels, total = hotel_service.get_hotels(filters, page, per_page)
+        for hotel in hotels:
+            hotel['id'] = str(hotel['_id'])   # 
+            del hotel['_id']
         return {"data": hotels, "meta": {"page": page, "per_page": per_page, "total": total}}
 
+@hotel_ns.route('/createHotel')
+class CreateHotel(Resource):
     @hotel_ns.doc('create_hotel')
     @hotel_ns.expect(hotel_model)
     @hotel_ns.response(201, 'Hotel created successfully')
@@ -65,7 +59,7 @@ class HotelList(Resource):
         result = hotel_service.create_hotel(data)
         if result.get('error'):
             return {"error": result['error']}, result.get('status_code', 500)
-        return {"message": "Hotel created successfully", "id": result['id']}, 201
+        return {"message": "Hotel created successfully", "id": result['id']}, 201    
 
 @hotel_ns.route('/<string:hotel_id>')
 @hotel_ns.param('hotel_id', 'Hotel ID')
@@ -75,6 +69,8 @@ class Hotel(Resource):
     def get(self, hotel_id):
         hotel = hotel_service.get_hotel_by_id(hotel_id)
         if hotel:
+            hotel['id'] = str(hotel['_id'])  
+            del hotel['_id']
             return hotel
         hotel_ns.abort(404, f"Hotel {hotel_id} not found")
 
@@ -93,49 +89,3 @@ class Hotel(Resource):
         if result.get('error'):
             return {"error": result['error']}, result.get('status_code', 500)
         return {"message": "Hotel deleted successfully"}
-
-@hotel_ns.route('/<string:hotel_id>/rooms')
-@hotel_ns.param('hotel_id', 'Hotel ID')
-class HotelRooms(Resource):
-    @hotel_ns.doc('get_hotel_rooms')
-    @hotel_ns.expect(room_parser)
-    @hotel_ns.marshal_with(room_list_model)
-    def get(self, hotel_id):
-        args = room_parser.parse_args()
-        filters = extract_filters(args, ['room_type', 'min_price', 'max_price', 'capacity', 'status'])
-        page, per_page = args['page'], args['per_page']
-        rooms, total = hotel_service.get_hotel_rooms(hotel_id, filters, page, per_page)
-        return {
-            "data": rooms,
-            "meta": {
-                "page": page,
-                "per_page": per_page,
-                "total": total,
-                "hotel_id": hotel_id
-            }
-        }
-
-@hotel_ns.route('/search/location')
-class HotelLocationSearch(Resource):
-    @hotel_ns.doc('search_hotels_by_location')
-    @hotel_ns.expect(location_parser)
-    @hotel_ns.marshal_with(hotel_list_model)
-    def get(self):
-        args = location_parser.parse_args()
-        city, country = args['city'], args['country']
-        if not city and not country:
-            return {"error": "At least one of 'city' or 'country' is required"}, 400
-        page, per_page = args['page'], args['per_page']
-        hotels, total = hotel_service.search_hotels_by_location(city, country, page, per_page)
-        return {
-            "data": hotels,
-            "meta": {
-                "page": page,
-                "per_page": per_page,
-                "total": total,
-                "filters": {
-                    "city": city,
-                    "country": country
-                }
-            }
-        }

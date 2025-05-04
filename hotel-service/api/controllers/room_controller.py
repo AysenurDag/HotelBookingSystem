@@ -22,6 +22,12 @@ status_update_model = room_ns.model('StatusUpdate', {
 def extract_filters(args, allowed_keys):
     return {k: v for k, v in args.items() if k in allowed_keys and v is not None}
 
+# Utility: serialize room
+def serialize_room(room):
+    room['id'] = str(room['_id'])
+    del room['_id']
+    return room
+
 # Common room filters
 room_parser = reqparse.RequestParser()
 room_parser.add_argument('hotel_id', type=str)
@@ -40,11 +46,14 @@ class RoomList(Resource):
     @room_ns.expect(room_parser)
     @room_ns.marshal_with(room_list_model)
     def get(self):
-        """Get all rooms with optional filters"""
         args = room_parser.parse_args()
         filters = extract_filters(args, ['hotel_id', 'room_type', 'min_price', 'max_price', 'capacity', 'status'])
         page, per_page = args['page'], args['per_page']
         rooms, total = room_service.get_rooms(filters, page, per_page)
+
+        # Convert _id to id
+        rooms = [serialize_room(room) for room in rooms]
+
         return {
             "data": rooms,
             "meta": {
@@ -78,12 +87,13 @@ class Room(Resource):
         """Get a specific room by ID"""
         room = room_service.get_room_by_id(room_id)
         if room:
-            return room
+            return serialize_room(room)
         return {"error": "Room not found"}, 404
 
     @room_ns.doc('update_room')
     @room_ns.expect(room_model)
     @room_ns.response(200, 'Room updated successfully')
+    @room_ns.response(500, 'Internal server error')
     def put(self, room_id):
         """Update a room"""
         data = request.json
@@ -94,28 +104,10 @@ class Room(Resource):
 
     @room_ns.doc('delete_room')
     @room_ns.response(200, 'Room deleted successfully')
+    @room_ns.response(500, 'Internal server error')
     def delete(self, room_id):
         """Delete a room"""
         result = room_service.delete_room(room_id)
         if result.get('error'):
             return {"error": result['error']}, result.get('status_code', 500)
         return {"message": "Room deleted successfully"}
-
-# ------------------------------------------
-@room_ns.route('/<string:room_id>/status')
-@room_ns.param('room_id', 'Room ID')
-class RoomStatus(Resource):
-    @room_ns.doc('update_room_status')
-    @room_ns.expect(status_update_model)
-    @room_ns.response(200, 'Room status updated successfully')
-    @room_ns.response(400, 'Missing or invalid status field')
-    def put(self, room_id):
-        """Update room status (e.g. available, occupied)"""
-        data = request.json
-        if not data or 'status' not in data:
-            return {"error": "Status field is required"}, 400
-
-        result = room_service.update_room_status(room_id, data['status'])
-        if result.get('error'):
-            return {"error": result['error']}, result.get('status_code', 500)
-        return {"message": f"Room status updated to {data['status']}"}

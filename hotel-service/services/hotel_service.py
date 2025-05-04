@@ -138,8 +138,6 @@ class HotelService:
         except Exception as e:
             current_app.logger.error(f"Error deleting hotel: {str(e)}")
             return {'error': str(e)}
-           
-    def get_hotel_rooms(self, hotel_id, filters=None, page=1, per_page=20):
         """
         Get all rooms associated with a specific hotel with optional filtering.
         
