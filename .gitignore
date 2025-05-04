@@ -8,6 +8,9 @@ Thumbs.db
 
 # VSCode
 .vscode/
+.vs/
+obj/
+bin/
 
 # JetBrains Rider / IntelliJ / Eclipse
 .idea/

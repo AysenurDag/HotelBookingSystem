@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Claims;
 using auth_user_service.DTOs;
 using auth_user_service.Models;
 using auth_user_service.Repositories;
@@ -12,7 +6,8 @@ using auth_user_service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace auth_user_service.Controllers
 {
@@ -22,23 +17,20 @@ namespace auth_user_service.Controllers
     {
         private readonly IApplicationUserRepository _userRepo;
         private readonly IConfiguration _config;
-        private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUser> _userManager;
-        private static Dictionary<string, string> _pending2FACodes = new();
+        private readonly IMemoryCache _cache;
 
         public AuthController(
             IApplicationUserRepository userRepo,
-            ITokenService tokenService,
             IConfiguration config,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IMemoryCache cache)
         {
             _userRepo = userRepo;
             _config = config;
-            _tokenService = tokenService;
             _userManager = userManager;
+            _cache = cache;
         }
-
-        // --- POST Endpoints ---
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto, [FromServices] EmailService emailService)
@@ -80,6 +72,10 @@ namespace auth_user_service.Controllers
             return Ok("Registration successful. Please check your email to confirm your account.");
         }
 
+
+
+        /*
+         
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto, [FromServices] EmailService emailService)
         {
@@ -87,69 +83,43 @@ namespace auth_user_service.Controllers
             if (user == null || !await _userRepo.CheckPasswordAsync(user, dto.Password))
                 return Unauthorized("Invalid credentials");
 
+            //if (!user.EmailConfirmed)
+                //return BadRequest("E-posta adresiniz henüz onaylanmamış.");
+
             var code = new Random().Next(100000, 999999).ToString();
-            _pending2FACodes[dto.Email] = code;
+            _cache.Set(dto.Email, code, TimeSpan.FromMinutes(5));
 
             await emailService.SendEmailAsync(dto.Email, "Your 2FA Code", $"Your verification code is: {code}");
 
             return Ok("2FA code sent to your email address.");
         }
+         
+         */
 
-        [HttpPost("verify-2fa")]
-        public async Task<IActionResult> Verify2FA(string email, string code, [FromServices] IConfiguration config)
-        {
-            if (!_pending2FACodes.ContainsKey(email))
-                return BadRequest("No pending 2FA request for this email");
+        /*
 
-            if (_pending2FACodes[email] != code)
-                return Unauthorized("Invalid 2FA code");
 
-            _pending2FACodes.Remove(email);
+         [HttpPost("verify-2fa")]
+       public async Task<IActionResult> Verify2FA([FromBody] Verify2FADto dto)
+       {
+           if (!_cache.TryGetValue(dto.Email, out string? expectedCode))
+               return BadRequest("No pending 2FA request for this email");
 
-            var user = await _userRepo.FindByEmailAsync(email);
-            if (user == null)
-                return Unauthorized();
+           if (expectedCode != dto.Code)
+               return Unauthorized("Invalid 2FA code");
 
-            var roles = await _userRepo.GetRolesAsync(user);
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email)
-            };
+           _cache.Remove(dto.Email);
 
-            foreach (var role in roles)
-                claims.Add(new Claim(ClaimTypes.Role, role));
+           var user = await _userRepo.FindByEmailAsync(dto.Email);
+           if (user == null)
+               return Unauthorized();
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"]!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+           return Ok("2FA verified. You can now use your Azure access token.");
+       }
 
-            var token = new JwtSecurityToken(
-                issuer: _config["JwtSettings:Issuer"],
-                audience: _config["JwtSettings:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds
-            );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+         */
 
-            return Ok(new { token = tokenString });
-        }
-
-        [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
-        {
-            var rt = await _tokenService.GetValidRefreshTokenAsync(dto.RefreshToken);
-            if (rt == null) return Unauthorized("Invalid refresh token.");
-
-            var user = await _userManager.FindByIdAsync(rt.UserId);
-            if (user == null) return Unauthorized("User not found.");
-
-            await _tokenService.MarkRefreshTokenAsUsed(rt);
-            var (newAccess, newRefresh) = await _tokenService.GenerateTokensAsync(user);
-
-            return Ok(new { accessToken = newAccess, refreshToken = newRefresh });
-        }
 
         [HttpPost("change-password")]
         [Authorize]
@@ -217,8 +187,6 @@ namespace auth_user_service.Controllers
             return Ok("User deleted successfully.");
         }
 
-        // --- GET Endpoints ---
-
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
@@ -228,22 +196,29 @@ namespace auth_user_service.Controllers
 
             var result = await _userManager.ConfirmEmailAsync(user, token);
 
-            if (result.Succeeded)
-                return Ok("Email confirmed successfully!");
-            else
-                return BadRequest("Email confirmation failed.");
+            return result.Succeeded
+                ? Ok("Email confirmed successfully!")
+                : BadRequest("Email confirmation failed.");
         }
 
         [HttpGet("CurrentUser")]
         [Authorize]
         public IActionResult GetCurrentUser()
         {
-            var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("preferred_username")?.Value;
+            var name = User.Identity?.Name;
+            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
-            return Ok(new { id, email, roles });
+            return Ok(new
+            {
+                userId,
+                email,
+                name,
+                roles
+            });
         }
+
 
         [HttpGet("all-users")]
         [Authorize(Roles = "Admin")]
@@ -252,5 +227,12 @@ namespace auth_user_service.Controllers
             var users = await _userRepo.GetAllAsync();
             return Ok(users.Select(u => new { u.Id, u.Email, u.Name, u.Surname }));
         }
+
+        [HttpGet("test-public")]
+        public IActionResult TestPublic()
+        {
+            return Ok("Public endpoint erişildi");
+        }
+
     }
 }
