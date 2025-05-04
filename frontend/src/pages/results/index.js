@@ -47,7 +47,7 @@ const SearchResults = () => {
   const totalPages = Math.ceil(pagination.total / pagination.perPage);
   
   return (
-    <div className="search-results-page">
+    <div className="search-results-pages">
       <div className="search-bar-container">
         <SearchBar initialValues={searchParams} onSearch={handleSearch} />
       </div>
