@@ -33,8 +33,6 @@ class RoomService:
             query['price_per_night'] = {'$lte': filters['max_price']}
         if 'capacity' in filters:
             query['capacity'] = {'$gte': filters['capacity']}
-        if 'status' in filters:
-            query['status'] = filters['status']
             
         skip = (page - 1) * per_page
         
@@ -77,14 +75,10 @@ class RoomService:
             #     return {'error': 'Room with this number already exists in this hotel', 'status_code': 409}
             
             # Add timestamps
-            room_data['created_at'] = datetime.utcnow()
-            room_data['updated_at'] = room_data['created_at']
             
             result = self.db.rooms.insert_one(room_data)
             
-            # Publish message to RabbitMQ
             room_data['_id'] = str(result.inserted_id)
-            publish_message('room.created', room_data)
             
             return {'id': str(result.inserted_id)}
         except Exception as e:
@@ -105,9 +99,7 @@ class RoomService:
                 return {'error': 'Room not found', 'status_code': 404}
                 
             if result.modified_count > 0:
-                # Publish message to RabbitMQ
                 room_data['_id'] = room_id
-                publish_message('room.updated', room_data)
                 
             return {'success': True}
         except Exception as e:
@@ -118,49 +110,15 @@ class RoomService:
         try:
             # Check if room is in use
             room = self.db.rooms.find_one({'_id': ObjectId(room_id)})
-            if room and room.get('status') == 'occupied':
-                return {'error': 'Cannot delete occupied room', 'status_code': 409}
-            
+           
             result = self.db.rooms.delete_one({'_id': ObjectId(room_id)})
             
             if result.deleted_count == 0:
                 return {'error': 'Room not found', 'status_code': 404}
                 
-            # Publish message to RabbitMQ
-            publish_message('room.deleted', {'_id': room_id})
                 
             return {'success': True}
         except Exception as e:
             current_app.logger.error(f"Error deleting room: {str(e)}")
             return {'error': str(e)}
     
-    def update_room_status(self, room_id, status):
-        try:
-            valid_statuses = ['available', 'occupied', 'maintenance', 'cleaning']
-            if status not in valid_statuses:
-                return {'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}', 'status_code': 400}
-            
-            result = self.db.rooms.update_one(
-                {'_id': ObjectId(room_id)},
-                {
-                    '$set': {
-                        'status': status,
-                        'updated_at': datetime.utcnow()
-                    }
-                }
-            )
-            
-            if result.matched_count == 0:
-                return {'error': 'Room not found', 'status_code': 404}
-                
-            if result.modified_count > 0:
-                # Publish message to RabbitMQ
-                publish_message('room.status_updated', {
-                    '_id': room_id,
-                    'status': status
-                })
-                
-            return {'success': True}
-        except Exception as e:
-            current_app.logger.error(f"Error updating room status: {str(e)}")
-            return {'error': str(e)}
