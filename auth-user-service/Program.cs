@@ -13,7 +13,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1) DbContext
 builder.Services.AddDbContext<AuthUserDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+        }
+    )
+);
 
 // 2) Redis
 builder.Services.AddSingleton<RedisService>();
@@ -82,6 +89,12 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80); // Docker içinde port 80'i dinle
+});
+
 
 var app = builder.Build();
 

@@ -13,6 +13,11 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
   booking-db:
     image: mysql:8.0
     container_name: booking-db
@@ -54,6 +59,30 @@ services:
       - "8081:8080"
     environment:
       SPRING_PROFILES_ACTIVE: default
+
+  auth-user-service:
+    build:
+      context: ./auth-user-service
+    ports:
+      - "5045:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=10.48.169.102,1433;Database=AuthUserDb;User Id=LastUser;Password=lastuser123;TrustServerCertificate=True;
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - redis
+      - rabbitmq
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - auth-user-service
 
   payment-service:
     build: ./nigar-payment-service

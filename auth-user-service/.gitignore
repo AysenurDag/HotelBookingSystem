@@ -10,9 +10,6 @@ obj/
 
 # Auth-user-service 
 auth-user-service/ws/auth-user-service/FileContentIndex/
-**/appsettings*.json
-appsettings*.json
-auth-user-service/appsettings.json
 
 
 
