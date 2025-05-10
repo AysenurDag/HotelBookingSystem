@@ -1,4 +1,4 @@
-package com.trivago.buse_booking_service.messaging;
+package com.trivago.buse_booking_service.messaging.booking_to_payment;
 
 /**
  * Saga başarısız olduğunda gönderilir.

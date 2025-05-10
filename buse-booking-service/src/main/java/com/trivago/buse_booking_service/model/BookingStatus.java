@@ -19,7 +19,7 @@ public enum BookingStatus {
     /**
      * Payment attempt has failed.
      */
-    PAYMENT_FAILED,
+    FAILED,
 
     /**
      * Booking has been cancelled either by user or system.

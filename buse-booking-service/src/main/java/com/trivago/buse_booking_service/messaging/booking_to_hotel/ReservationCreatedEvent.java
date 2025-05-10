@@ -1,24 +1,32 @@
-package com.trivago.buse_booking_service.messaging;
+package com.trivago.buse_booking_service.messaging.booking_to_hotel;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 
-/**
- * Hotel Service'e oda rezervasyonu için gönderilir.
- * Booking başarıyla kaydedildikten sonra yayınlanır.
- */
 public class ReservationCreatedEvent {
-
+    @JsonProperty("bookingId")
     private Long bookingId;
+
+    @JsonProperty("roomId")
     private String roomId;
+
+    @JsonProperty("userId")
     private String userId;
+
+    @JsonProperty("checkInDate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate checkInDate;
+
+    @JsonProperty("checkOutDate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate checkOutDate;
 
     public ReservationCreatedEvent() {
     }
 
-    public ReservationCreatedEvent(Long bookingId, String roomId, String userId,
-            LocalDate checkInDate, LocalDate checkOutDate) {
+    public ReservationCreatedEvent(Long bookingId, String roomId, String userId, LocalDate checkInDate,
+            LocalDate checkOutDate) {
         this.bookingId = bookingId;
         this.roomId = roomId;
         this.userId = userId;
@@ -65,4 +73,5 @@ public class ReservationCreatedEvent {
     public void setCheckOutDate(LocalDate checkOutDate) {
         this.checkOutDate = checkOutDate;
     }
+
 }

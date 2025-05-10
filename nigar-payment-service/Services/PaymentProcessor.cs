@@ -144,7 +144,12 @@ namespace nigar_payment_service.Services
                     queueName = PaymentFailedQ;
                 }
 
-                var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(resultEvent));
+var options = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+};
+
+var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(resultEvent, options));
                 channel.BasicPublish(
                     exchange:       "",
                     routingKey:     queueName,
