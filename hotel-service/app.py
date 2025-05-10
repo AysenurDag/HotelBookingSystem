@@ -22,9 +22,6 @@ def handle_message(ch, method, properties, body):
         logging.error(f"[Hotel Consumer] Failed to process message: {e}")
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
-if __name__ == "__main__":
-    consume_messages("booking.reservation.created.queue", handle_message)
-
 def create_app(config_name='default'):
     app = Flask(__name__)
     CORS(app)
@@ -57,5 +54,6 @@ def create_app(config_name='default'):
     return app
 
 if __name__ == '__main__':
+    consume_messages("booking.reservation.created.queue", handle_message)
     app = create_app(os.getenv('FLASK_ENV', 'development'))
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'])
