@@ -55,7 +55,7 @@ namespace nigar_payment_service.Controllers
             return Ok(payments);
         }
         
-        [HttpGet("booking/{bookingId}")]
+        [HttpGet("booking/{bookingId:long}")]
         public async Task<IActionResult> GetByBooking(long bookingId)
         {
             var payment = await _db.Payments
