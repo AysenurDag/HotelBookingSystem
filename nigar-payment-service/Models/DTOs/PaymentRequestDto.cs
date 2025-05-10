@@ -2,7 +2,7 @@ namespace nigar_payment_service.Models.DTOs;
 
 public record PaymentRequestDto(
     Guid   CorrelationId,
-    string  BookingId,
+    long  BookingId,
     string CustomerId,
     decimal Amount,
     string CardNumber,

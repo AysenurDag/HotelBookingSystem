@@ -1,5 +1,10 @@
- using System.Text;
-using System.Text.Json; 
+using System;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using nigar_payment_service.DbContext;
@@ -19,7 +24,6 @@ namespace nigar_payment_service.Consumers
         private const string BookingExchange    = "booking.exchange";
         private const string BookingQueue       = "booking.created.queue";
         private const string BookingRoutingKey  = "booking.created";
-
         private const string PaymentSuccessQueue = "payment.success.queue";
         private const string PaymentFailedQueue  = "payment.failed.queue";
 
@@ -35,7 +39,7 @@ namespace nigar_payment_service.Consumers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // 1) RabbitMQ’a bağlanana kadar retry
+            // 1) RabbitMQ’a bağlan/kuyrukları declare et
             IConnection connection = null!;
             IModel      channel    = null!;
             while (!stoppingToken.IsCancellationRequested)
@@ -45,82 +49,59 @@ namespace nigar_payment_service.Consumers
                     connection = _factory.CreateConnection();
                     channel    = connection.CreateModel();
 
-                    // 2) Exchange ve Queue declare
-                    channel.ExchangeDeclare(
-                        exchange:   BookingExchange,
-                        type:       ExchangeType.Topic,
-                        durable:    true,
-                        autoDelete: false,
-                        arguments:  null);
+                    channel.ExchangeDeclare(BookingExchange, ExchangeType.Topic, durable: true);
+                    channel.QueueDeclare(BookingQueue,       durable: true, exclusive: false, autoDelete: false);
+                    channel.QueueDeclare(PaymentSuccessQueue, durable: true, exclusive: false, autoDelete: false);
+                    channel.QueueDeclare(PaymentFailedQueue,  durable: true, exclusive: false, autoDelete: false);
+                    channel.QueueBind(BookingQueue, BookingExchange, BookingRoutingKey);
 
-                    channel.QueueDeclare(
-                        queue:      BookingQueue,
-                        durable:    true,
-                        exclusive:  false,
-                        autoDelete: false,
-                        arguments:  null);
-
-                    // Yeni eklenen kuyruk tanımları
-                    channel.QueueDeclare(
-                        queue:      PaymentSuccessQueue,
-                        durable:    true,
-                        exclusive:  false,
-                        autoDelete: false,
-                        arguments:  null);
-
-                    channel.QueueDeclare(
-                        queue:      PaymentFailedQueue,
-                        durable:    true,
-                        exclusive:  false,
-                        autoDelete: false,
-                        arguments:  null);
-
-                    // 3) Bind
-                    channel.QueueBind(
-                        queue:      BookingQueue,
-                        exchange:   BookingExchange,
-                        routingKey: BookingRoutingKey,
-                        arguments:  null);
-
-                    Console.WriteLine(
-                      $"✅ Listening on '{BookingExchange}' → '{BookingQueue}' ({BookingRoutingKey})");
+                    Console.WriteLine($"✅ Listening on '{BookingExchange}' → '{BookingQueue}'");
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(
-                      $"❌ RabbitMQ bağlantısında hata: {ex.Message}. 5s sonra retry...");
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    Console.WriteLine($"❌ RabbitMQ bağlantısında hata: {ex.Message}. 5s sonra retry...");
+                    await Task.Delay(5_000, stoppingToken);
                 }
             }
-
             if (channel == null) return;
 
+            // 2) mesajları tüket
             var consumer = new AsyncEventingBasicConsumer(channel);
-          consumer.Received += async (sender, ea) =>
+            consumer.Received += async (sender, ea) =>
             {
                 try
                 {
-                    if (stoppingToken.IsCancellationRequested) return;
-
                     var json = Encoding.UTF8.GetString(ea.Body.ToArray());
                     var evt  = JsonSerializer.Deserialize<BookingCreatedEvent>(json);
                     if (evt == null)
                     {
-                        Console.WriteLine("❌ Geçersiz BookingCreatedEvent, ack’ediliyor.");
+                        // invalid payload → hemen ack
                         channel.BasicAck(ea.DeliveryTag, false);
                         return;
                     }
 
-                    Console.WriteLine($"📩 BookingCreatedEvent received: {json}");
+                    var bookingId = long.Parse(evt.BookingId);
 
-                    // 1) DB’ye Pending kaydı ekle
-                    using var scope = _services.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+                    // İDEMPOTENCY GUARD 
+                    using var scope0 = _services.CreateScope();
+                    var db0 = scope0.ServiceProvider.GetRequiredService<PaymentDbContext>();
 
+                    var already = await db0.Payments
+                        .AnyAsync(p => p.BookingId == bookingId);
+                    if (already)
+                    {
+                        Console.WriteLine($"↻ Duplicate BookingCreatedEvent for BookingId={bookingId}, skipping.");
+                        channel.BasicAck(ea.DeliveryTag, false);
+                        return;
+                    }
+
+                    Console.WriteLine($"📩 BookingCreatedEvent received: bookingId={bookingId}");
+
+                    // 3) DB’ye Pending kaydı ekle
                     var payment = new Payment
                     {
-                        BookingId     = evt.BookingId,
+                        BookingId     = bookingId,
                         CustomerId    = evt.UserId,
                         Amount        = evt.TotalAmount,
                         Status        = PaymentStatus.Pending,
@@ -128,92 +109,67 @@ namespace nigar_payment_service.Consumers
                         CorrelationId = Guid.NewGuid(),
                         CardLast4     = "0000"
                     };
-                    Console.WriteLine($"➡️ DB kaydı öncesi: BookingId = {evt.BookingId}");
-                    db.Payments.Add(payment);
-                    await db.SaveChangesAsync();
-                    Console.WriteLine($"✅ DB kaydı başarılı: PaymentId = {payment.Id}");
-                    // 2) Gerçek ya da dummy gateway çağrısı
+                    db0.Payments.Add(payment);
+                    await db0.SaveChangesAsync();
+                    Console.WriteLine($"✅ DB kaydı başarılı: PaymentId={payment.Id}");
+
+                    // 4) Gateway’e yolla, anında Pending dönüyor ama arkada simülasyon başlıyor
                     var dto = new PaymentRequestDto(
                         payment.CorrelationId,
-                        evt.BookingId,
-                        evt.UserId,
-                        evt.TotalAmount,
-                        "0000000000000000", "01/30", "123");
-                    bool success = false;
-                    string? failureReason = null;
-                    try
+                        payment.BookingId,
+                        payment.CustomerId!,
+                        payment.Amount,
+                        "0000000000000000", "01/30", "123"
+                    );
+                    var gatewayResp = await _gateway.ProcessAsync(dto);
+
+                    // 5) Sadece Final (Success veya Failed) durumunda event publish et
+                    if (gatewayResp.Status == PaymentStatus.Pending)
                     {
-                        Console.WriteLine($"📞 Gateway çağrısı yapılıyor: CorrelationId = {payment.CorrelationId}");
-
-                        var gatewayResponse = await _gateway.ProcessAsync(dto);
-                        success = gatewayResponse.Status == PaymentStatus.Success;
-                        
-                        Console.WriteLine($"↩️ Gateway yanıtı alındı  Success: Status = {gatewayResponse.Status}");
-
-                        failureReason = gatewayResponse.FailureReason;
-                        Console.WriteLine($"↩️ Gateway yanıtı alındı  FailureReason: Status = {gatewayResponse.Status}");
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"⚠️ Gateway error: {ex.Message}");
-                        failureReason = ex.Message;
+                        // hâlâ Pending ise → bekle, event atma, sadece ack
+                        channel.BasicAck(ea.DeliveryTag, false);
+                        return;
                     }
 
-                    // 3) Sonuca göre event publish
                     object resultEvent;
-                    var targetQueue = "";
-
-                    if (success)
+                    string targetQueue;
+                    if (gatewayResp.Status == PaymentStatus.Success)
                     {
                         resultEvent = new PaymentSucceededEvent
                         {
-                            BookingId = evt.BookingId,
+                            BookingId = payment.BookingId,
                             PaymentId = payment.Id
                         };
                         targetQueue = PaymentSuccessQueue;
                     }
-                    else
+                    else // Failed
                     {
                         resultEvent = new PaymentFailedEvent
                         {
-                            BookingId = evt.BookingId,
+                            BookingId = payment.BookingId,
                             PaymentId = payment.Id,
-                            Reason = failureReason ?? "Ödeme işlemi başarısız oldu."
+                            Reason    = gatewayResp.FailureReason!
                         };
                         targetQueue = PaymentFailedQueue;
                     }
 
                     var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(resultEvent));
+                    channel.BasicPublish("", targetQueue, basicProperties: null, body: body);
+                    Console.WriteLine($"📤 Published {(gatewayResp.Status==PaymentStatus.Success? "Succeeded":"Failed")}Event to '{targetQueue}'");
 
-                    channel.BasicPublish(
-                        exchange:    "",                       // default exchange
-                        routingKey:  targetQueue,
-                        basicProperties: null,
-                        body:         body);
-
-                    Console.WriteLine(
-                      $"📤 Published {(success?"Succeeded":"Failed")}Event to '{targetQueue}': " +
-                      Encoding.UTF8.GetString(body));
-
-                    // 4) asıl mesajı ack’le
+                    // 6) BookingCreatedEvent’i ack’le
                     channel.BasicAck(ea.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"🔥 Bir hata oluştu: {ex}");
-                    // Hata durumunda mesajı tekrar kuyruğa atmak yerine (sonsuz döngüye yol açabilir),
-                    // loglayıp geçici bir çözüm olarak ack'leyebiliriz veya DLQ'ya gönderebiliriz.
+                    Console.WriteLine($"🔥 Consumer error: {ex}");
                     channel.BasicAck(ea.DeliveryTag, false);
                 }
             };
 
-            channel.BasicConsume(
-                queue:    BookingQueue,
-                autoAck:  false,
-                consumer: consumer);
+            channel.BasicConsume(BookingQueue, autoAck: false, consumer: consumer);
 
-            // Processu canlı tut
+            
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }
     }

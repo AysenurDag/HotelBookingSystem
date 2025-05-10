@@ -9,7 +9,7 @@ services:
     ports:
       - "5001:5000"
     environment:
-      - RABBITMQ_HOST=10.47.7.151
+      - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres_payment;Port=5432;Database=paymentdb;Username=admin;Password=admin123

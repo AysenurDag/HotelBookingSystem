@@ -5,7 +5,7 @@ public class Payment
 {
     public long Id { get; set; }
     public string CustomerId { get; set; }      // User/Customer
-    public string  BookingId { get; set; }   // Booking servisten gelen ID
+    public long  BookingId { get; set; }   // Booking servisten gelen ID
     public decimal Amount { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -114,7 +114,7 @@ services:
       dockerfile: Dockerfile
     container_name: hotel-service
     ports:
-      - "5000:5000"
+      - "5002:5000"
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=development
