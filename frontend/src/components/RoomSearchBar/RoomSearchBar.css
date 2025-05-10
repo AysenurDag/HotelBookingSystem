@@ -1,3 +1,4 @@
+/* Senin verdiğin stiller zaten mükemmel uyumlu */
 .search-bar {
   background: #ffffff;
   padding: 2rem;
@@ -8,7 +9,6 @@
   gap: 2rem;
 }
 
-/* Satır (row) düzeni */
 .search-bar .first.row,
 .search-bar .second.row {
   display: flex;
@@ -18,7 +18,6 @@
   justify-content: space-between;
 }
 
-/* Giriş alanları */
 .search-input {
   flex: 1 1 250px;
   display: flex;
@@ -26,7 +25,6 @@
   min-width: 200px;
 }
 
-/* Etiket stili */
 .search-input label {
   margin-bottom: 0.4rem;
   font-size: 0.95rem;
@@ -34,7 +32,6 @@
   color: #444;
 }
 
-/* Input ve Select */
 .search-input input,
 .search-input select {
   padding: 0.75rem;
@@ -52,7 +49,6 @@
   outline: none;
 }
 
-/* Arama butonu */
 .search-button {
   align-self: center;
   padding: 0.9rem 2.5rem;
@@ -70,7 +66,6 @@
   background-color: #005a9e;
 }
 
-/* Mobil uyum */
 @media (max-width: 768px) {
   .search-bar .first.row,
   .search-bar .second.row {

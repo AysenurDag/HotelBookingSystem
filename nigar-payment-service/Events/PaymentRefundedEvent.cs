@@ -1,7 +1,13 @@
-namespace nigar_payment_service.Events;
+using System.Text.Json.Serialization;
 
-public class PaymentRefundedEvent
+namespace nigar_payment_service.Events
 {
-    public long BookingId { get; set; }
-    public long PaymentId     { get; set; }
+    public class PaymentRefundedEvent
+    {
+        [JsonPropertyName("bookingId")]
+        public long BookingId { get; set; }
+
+        [JsonPropertyName("paymentId")]
+        public long PaymentId { get; set; }
+    }
 }
