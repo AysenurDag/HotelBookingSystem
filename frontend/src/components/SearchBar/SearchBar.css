@@ -3,16 +3,13 @@
   padding: 1.5rem 2rem;
   border-radius: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 1.2rem;
   align-items: flex-end;
-  justify-content: space-between;
 }
 
 .search-input {
-  flex: 1;
-  min-width: 180px;
   display: flex;
   flex-direction: column;
 }
@@ -42,6 +39,9 @@
 }
 
 .search-button {
+  grid-column: 1 / -1; /* tüm satırı kapla */
+  justify-self: center;
+  margin-top: 1rem;
   padding: 0.8rem 2rem;
   background-color: #0071c2;
   color: white;
@@ -59,10 +59,9 @@
 
 @media (max-width: 768px) {
   .search-bar {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .search-input,
   .search-button {
     width: 100%;
   }
