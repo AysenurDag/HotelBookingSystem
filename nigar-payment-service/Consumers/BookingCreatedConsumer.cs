@@ -161,7 +161,10 @@ namespace nigar_payment_service.Consumers
 
                     var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(resultEvent));
                     channel.BasicPublish("", targetQueue, basicProperties: null, body: body);
-                    Console.WriteLine($"📤 Published {(gatewayResp.Status == PaymentStatus.Success ? "Succeeded" : "Failed")}Event to '{targetQueue}'");
+                    Console.WriteLine(
+                        $"📤 Published {(gatewayResp.Status == PaymentStatus.Success ? "Succeeded" : "Failed")}Event to '{targetQueue}': " +
+                    JsonSerializer.Serialize(resultEvent)
+                    );
 
                     // 6) BookingCreatedEvent’i ack’le
                     channel.BasicAck(ea.DeliveryTag, false);
