@@ -46,23 +46,28 @@ namespace nigar_payment_service.Controllers
         // GET  /api/payments/booking/{bookingId}
         // BookingId üzerinden sondurum + failureReason sorgulama
         [HttpGet("booking/{bookingId:long}")]
+        // GET  /api/payments/booking/{bookingId}
+        [HttpGet("booking/{bookingId:long}")]
         public async Task<IActionResult> GetByBooking(long bookingId)
         {
             var payment = await _db.Payments
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.BookingId == bookingId);
+                                   .AsNoTracking()
+                                   .FirstOrDefaultAsync(p => p.BookingId == bookingId);
 
             if (payment == null)
                 return NotFound(new { message = $"BookingId={bookingId} için ödeme bulunamadı." });
 
             return Ok(new
             {
-                payment.BookingId,
-                payment.Id,
+                BookingId = payment.BookingId,
+                PaymentId = payment.Id,
                 Status = payment.Status.ToString(),
-                Reason = payment.FailureReason
+                Reason = payment.FailureReason,
+                Amount = payment.Amount,
+                CustomerId = payment.CustomerId
             });
         }
+
 
         // GET  /api/payments/user/{customerId}
         [HttpGet("user/{customerId}")]
