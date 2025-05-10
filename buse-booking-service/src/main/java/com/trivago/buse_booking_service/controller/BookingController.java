@@ -1,7 +1,7 @@
 package com.trivago.buse_booking_service.controller;
 
-import com.trivago.buse_booking_service.messaging.BookingCreatedEvent;
-import com.trivago.buse_booking_service.messaging.BookingEventProducer;
+import com.trivago.buse_booking_service.messaging.booking_to_payment.BookingCreatedEvent;
+import com.trivago.buse_booking_service.messaging.booking_to_payment.producer.BookingEventProducer;
 import com.trivago.buse_booking_service.model.Booking;
 import com.trivago.buse_booking_service.service.BookingHistoryService;
 import com.trivago.buse_booking_service.service.BookingService;
@@ -30,27 +30,8 @@ public class BookingController {
     @Autowired
     private BookingEventProducer bookingProducer;
 
-    @RestController
-    @RequestMapping("/api/test")
-    public class TestController {
-
-        @Autowired
-        private BookingEventProducer eventProducer;
-
-        @PostMapping("/booking-event")
-        public ResponseEntity<String> sendTestEvent() {
-            BookingCreatedEvent event = new BookingCreatedEvent("42", "user-1", 999.0, "USD");
-            eventProducer.sendBookingCreatedEvent(event);
-            return ResponseEntity.ok("BookingCreatedEvent sent.");
-        }
-    }
-
-    // ----------------------
-    // 📌 CRUD işlemleri
-    // ----------------------
-
-    @Operation(summary = "Create a new booking and emit BookingCreatedEvent with amount and currency to PaymentService")
     @PostMapping
+    @Operation(summary = "Create a new booking")
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
         Booking savedBooking = bookingService.createBooking(booking);
         bookingHistoryService.logHistory(savedBooking.getBookingId(), "CREATED");
@@ -65,81 +46,69 @@ public class BookingController {
         return ResponseEntity.ok(savedBooking);
     }
 
-    @Operation(summary = "Cancel a booking")
     @PostMapping("/{id}/cancel")
+    @Operation(summary = "Cancel a booking")
     public ResponseEntity<Booking> cancelBooking(@PathVariable Long id) {
-        Booking cancelled = bookingService.cancelBooking(id);
+        Booking cancelled = bookingService.cancelBooking(id, "Cancelled by user or system");
         bookingHistoryService.logHistory(cancelled.getBookingId(), "CANCELLED");
         return ResponseEntity.ok(cancelled);
     }
 
-    @Operation(summary = "Get booking by ID")
     @GetMapping("/{id}")
+    @Operation(summary = "Get booking by ID")
     public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
         return bookingService.getBooking(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Get all bookings")
     @GetMapping
+    @Operation(summary = "Get all bookings")
     public ResponseEntity<List<Booking>> getAllBookings() {
         return ResponseEntity.ok(bookingService.getAllBookings());
     }
 
-    @Operation(summary = "Delete a booking")
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a booking")
     public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ----------------------
-    // 🔍 Filtreli aramalar
-    // ----------------------
-
-    @Operation(summary = "Get bookings by user ID")
     @GetMapping("/user/{userId}")
+    @Operation(summary = "Get bookings by user ID")
     public ResponseEntity<List<Booking>> getBookingsByUser(@PathVariable String userId) {
         return ResponseEntity.ok(bookingService.getBookingsByUser(userId));
     }
 
-    @Operation(summary = "Get bookings within a date range")
     @GetMapping("/date-range")
+    @Operation(summary = "Get bookings within a date range")
     public ResponseEntity<List<Booking>> getBookingsByDateRange(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
         return ResponseEntity.ok(bookingService.getBookingsInDateRange(start, end));
     }
 
-    @Operation(summary = "Get bookings by status")
     @GetMapping("/status/{status}")
+    @Operation(summary = "Get bookings by status")
     public ResponseEntity<List<Booking>> getBookingsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(bookingService.getBookingsByStatus(status));
     }
 
-    @Operation(summary = "Get bookings for today")
     @GetMapping("/today")
+    @Operation(summary = "Get bookings for today")
     public ResponseEntity<List<Booking>> getTodaysBookings() {
         return ResponseEntity.ok(bookingService.getTodaysBookings());
     }
 
-    // ----------------------
-    // 📊 İstatistikler
-    // ----------------------
-
-    @Operation(summary = "Get booking statistics by status")
     @GetMapping("/statistics")
+    @Operation(summary = "Get booking statistics by status")
     public ResponseEntity<Map<String, Long>> getBookingStatistics() {
         return ResponseEntity.ok(bookingService.getBookingStatistics());
     }
 
-    // ----------------------
-    // 🕓 İlgili kayıtlar
-    // ----------------------
-
-    @Operation(summary = "Get booking history")
     @GetMapping("/{id}/history")
+    @Operation(summary = "Get booking history")
     public ResponseEntity<?> getBookingHistory(@PathVariable Long id) {
         return ResponseEntity.ok(bookingHistoryService.getHistoryForBooking(id));
     }

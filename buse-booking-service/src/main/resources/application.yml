@@ -31,6 +31,9 @@ rabbitmq:
     cancelled: booking.cancelled
     reservationCreated: booking.reservation.created
     confirmed: booking.confirmed
+    paymentSucceeded: payment.succeeded
+    paymentFailed: payment.failed
+    roomFailed: hotel.room.failed
 
   queue:
     bookingCreated: booking.created.queue
