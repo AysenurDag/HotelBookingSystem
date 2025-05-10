@@ -1,27 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../../components/SearchBar";
 import BannerSlider from "../../components/BannerSlider";
+import { getCurrentUser } from "../../services/api"; // ✅ token ile kullanıcı bilgisi çeken fonksiyon
 import "./HomePage.css";
 
 const exploreDestinations = [
-  {
-    name: "Istanbul",
-    image: "/images/istanbul.jpg",
-  },
-  {
-    name: "Antalya",
-    image: "/images/antalya.jpg",
-  },
-  {
-    name: "Bodrum",
-    image: "/images/Bodrum.jpg",
-  },
+  { name: "Istanbul", image: "/images/istanbul.jpg" },
+  { name: "Antalya", image: "/images/antalya.jpg" },
+  { name: "Bodrum", image: "/images/Bodrum.jpg" },
 ];
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [searchPerformed, setSearchPerformed] = useState(false);
+  const [user, setUser] = useState(null); // ✅ login olan kullanıcı bilgisi
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((res) => {
+        setUser(res);
+        console.log("Aktif kullanıcı:", res);
+      })
+      .catch((err) => console.log("Kullanıcı bilgisi alınamadı:", err.message));
+  }, []);
 
   const handleSearch = () => {
     setSearchPerformed(true);
@@ -36,6 +38,13 @@ const HomePage = () => {
       <section className="hero-banner">
         <BannerSlider />
       </section>
+
+      {/* 👤 Login olmuş kullanıcıyı karşılama */}
+      {user && (
+        <div className="welcome-user" style={{ margin: "1rem 0", fontSize: "1.1rem" }}>
+          👋 Welcome, <strong>{user.name || user.email}</strong>
+        </div>
+      )}
 
       <SearchBar initialValues={{}} onSearch={handleSearch} />
 

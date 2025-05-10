@@ -38,12 +38,21 @@ builder.Services
     .AddDefaultTokenProviders();
 
 // 4) Authentication: Default scheme olarak JWT Bearer (hem Authenticate hem Challenge)
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = $"https://login.microsoftonline.com/{builder.Configuration["AzureAd:TenantId"]}/v2.0";
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidAudiences = new[]
+            {
+                builder.Configuration["AzureAd:Audience"], // yani api://... hali
+                builder.Configuration["AzureAd:ClientId"]  // yani sadece clientId hali
+            }
+        };
+    });
+
 
 // 5) Authorization (rol tabanlı politika)
 builder.Services.AddAuthorization(options =>
@@ -109,10 +118,20 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthUserService v1");
+
+    // B2C veya Entra External ID kimlik doğrulama ayarları
     c.OAuthClientId(azureAd["ClientId"]);
     c.OAuthUsePkce();
     c.OAuthScopeSeparator(" ");
+    c.OAuthScopes(azureAd["Scopes"]);
+
+    // 🔒 Entra External ID user flow (policy) adı ekleniyor
+    c.OAuthAdditionalQueryStringParams(new Dictionary<string, string>
+    {
+        { "p", "HotelBookingSignUp" } // Kullanıcı akışı adın buysa bu şekilde kalmalı
+    });
 });
+
 
 // 10) Rolleri otomatik oluştur
 using (var scope = app.Services.CreateScope())
