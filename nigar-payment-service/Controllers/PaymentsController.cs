@@ -1,18 +1,12 @@
 using System;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client;
 using nigar_payment_service.DbContext;
-using nigar_payment_service.Events;
 using nigar_payment_service.Gateways;
 using nigar_payment_service.Models;
-
 using nigar_payment_service.Models.DTOs;
-using RabbitMQ.Client.Exceptions;
 
 namespace nigar_payment_service.Controllers
 {
@@ -21,56 +15,89 @@ namespace nigar_payment_service.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly PaymentDbContext _db;
-        private readonly IConnectionFactory _factory;
         private readonly IPaymentGateway _gateway;
 
-        public PaymentsController(PaymentDbContext db, IConnectionFactory factory, IPaymentGateway gateway)
+        public PaymentsController(
+            PaymentDbContext db,
+            IPaymentGateway gateway)
         {
             _db = db;
-            _factory = factory;
             _gateway = gateway;
         }
 
+        // GET  /api/payments
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var payments = await _db.Payments.ToListAsync();
-            return Ok(payments);
+            var all = await _db.Payments.AsNoTracking().ToListAsync();
+            return Ok(all);
         }
-        
+
+        // GET  /api/payments/{id}
+        // Ödeme kaydını Payment.Id üzerinden getirir
         [HttpGet("{id:long}")]
         public async Task<IActionResult> GetByPaymentId(long id)
         {
             var p = await _db.Payments.FindAsync(id);
-            return p == null ? NotFound() : Ok(p);
+            if (p == null) return NotFound(new { message = $"PaymentId={id} bulunamadı." });
+            return Ok(p);
         }
-        
-        // GET api/payments/{bookingId}
-        [HttpGet("{bookingId}")]
-        public async Task<IActionResult> GetStatus(long bookingId)
+
+        // GET  /api/payments/booking/{bookingId}
+        // BookingId üzerinden sondurum + failureReason sorgulama
+        [HttpGet("booking/{bookingId:long}")]
+        public async Task<IActionResult> GetByBooking(long bookingId)
         {
             var payment = await _db.Payments
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.BookingId == bookingId);
 
             if (payment == null)
-                return NotFound(new { Message = "Payment not found" });
+                return NotFound(new { message = $"BookingId={bookingId} için ödeme bulunamadı." });
 
             return Ok(new
             {
                 payment.BookingId,
                 payment.Id,
-                payment.Status,
-                payment.FailureReason
+                Status = payment.Status.ToString(),
+                Reason = payment.FailureReason
             });
         }
 
-
-      // POST api/payments
-        [HttpPost]
-        public async Task<IActionResult> StartPayment([FromBody] PaymentRequestDto dto)
+        // GET  /api/payments/user/{customerId}
+        [HttpGet("user/{customerId}")]
+        public async Task<IActionResult> GetByUser(string customerId)
         {
-            // 1) Record pending payment
+            var payments = await _db.Payments
+                                   .AsNoTracking()
+                                   .Where(p => p.CustomerId == customerId)
+                                   .ToListAsync();
+            return Ok(payments);
+        }
+
+        // GET  /api/payments/status/{status}
+        [HttpGet("status/{status}")]
+        public async Task<IActionResult> GetByStatus(string status)
+        {
+            if (!Enum.TryParse<PaymentStatus>(status, true, out var ps))
+                return BadRequest(new { message = $"Invalid payment status '{status}'" });
+
+            var payments = await _db.Payments
+                                   .AsNoTracking()
+                                   .Where(p => p.Status == ps)
+                                   .ToListAsync();
+            return Ok(payments);
+        }
+
+        // POST /api/payments
+        // Yeni bir ödeme başlatır: DB’ye Pending kaydını ekler, ardından gateway’i tetikler.
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] PaymentProcessRequest dto)
+        {
+            // 1) CorrelationId üret
+            var correlationId = Guid.NewGuid();
+
+            // 2) Pending kaydını ekle
             var payment = new Payment
             {
                 BookingId = dto.BookingId,
@@ -78,144 +105,41 @@ namespace nigar_payment_service.Controllers
                 Amount = dto.Amount,
                 Status = PaymentStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
-                CorrelationId = dto.CorrelationId,
-                CardLast4 = dto.CardNumber.Substring(dto.CardNumber.Length - 4)
-            };
-
-            _db.Payments.Add(payment);
-            await _db.SaveChangesAsync();
-
-            // 2) Trigger gateway
-            var response = await _gateway.ProcessAsync(dto);
-
-            // 3) Return initial status
-            return AcceptedAtAction(nameof(GetStatus),
-                new { bookingId = payment.BookingId },
-                new { payment.BookingId, payment.Id, response.Status });
-        }
-
-        [HttpGet("user/{customerId}")]
-        public async Task<IActionResult> GetByUser(string customerId)
-        {
-            var payments = await _db.Payments
-                .Where(p => p.CustomerId == customerId)
-                .ToListAsync();
-            return Ok(payments);
-        }
-        
-        [HttpGet("booking/{bookingId:long}")]
-        public async Task<IActionResult> GetByBooking(long bookingId)
-        {
-            var payment = await _db.Payments
-                .FirstOrDefaultAsync(p => p.BookingId == bookingId);
-            if (payment == null)
-                return NotFound(new { message = $"No payment found for booking {bookingId}" });
-            return Ok(payment);
-        }
-        
-            
-        [HttpGet("status/{status}")]
-        public async Task<IActionResult> GetByStatus(string status)
-        {
-            // Enum değerini parse et (case-insensitive)
-            if (!Enum.TryParse<PaymentStatus>(status, true, out var parsedStatus))
-                return BadRequest(new { message = $"Invalid payment status '{status}'" });
-
-            var payments = await _db.Payments
-                .Where(p => p.Status == parsedStatus)
-                .ToListAsync();
-
-            return Ok(payments);
-        }
-        
-
-        [HttpPost("process")]
-        public async Task<IActionResult> Process([FromBody] PaymentProcessRequest req)
-        {
-            //  DB’ye Pending kaydı ekle
-            var corrId = Guid.NewGuid();
-            var payment = new Payment {
-                BookingId  = req.BookingId,
-                CustomerId     = req.CustomerId,
-                Amount         = req.Amount,
-                CorrelationId  = corrId,
-                CardLast4      = req.CardNumber[^4..],
-                Status         = PaymentStatus.Pending,
-                CreatedAt      = DateTime.UtcNow
+                CorrelationId = correlationId,
+                CardLast4 = dto.CardNumber[^4..]
             };
             _db.Payments.Add(payment);
             await _db.SaveChangesAsync();
 
-            //  Gateway’e gönder
-            var dto = new PaymentRequestDto(
-                corrId,
-                req.BookingId,
-                req.CustomerId,
-                req.Amount,
-                req.CardNumber,
-                req.Expiry,
-                req.Cvv
-            );
-            var gatewayResp = await _gateway.ProcessAsync(dto);
+            // 3) Gateway’e tetikle (dto’yu gateway’in kullandığı formata çevir)
+            var gatewayDto = new PaymentRequestDto(
+                correlationId,
+                dto.BookingId,
+                dto.CustomerId,
+                dto.Amount,
+                dto.CardNumber,
+                dto.Expiry,
+                dto.Cvv);
 
-            //  202 Accepted dön, sonucu Saga’da takip et
-            return Accepted(new {
+            _ = _gateway.ProcessAsync(gatewayDto); // fire-and-forget
+
+            // 4) Takip URL’si döndür
+            var trackUrl = Url.Action(
+                nameof(GetByBooking),
+                "Payments",
+                new { bookingId = dto.BookingId },
+                Request.Scheme);
+
+            return Accepted(trackUrl, new
+            {
+                dto.BookingId,
                 payment.Id,
-                correlationId = gatewayResp.CorrelationId,
-                status        = gatewayResp.Status
+                trackUrl
             });
         }
-
-
- 
-
-        [HttpPost("{id}/refund")]
-        public async Task<IActionResult> Refund(long id, [FromBody] RefundPaymentRequest req)
-        {
-            var payment = await _db.Payments.FindAsync(id);
-            if (payment == null) return NotFound();
-
-            payment.Status = PaymentStatus.Refunded;
-            payment.UpdatedAt = DateTime.UtcNow;
-            payment.RefundReason = req.Reason;
-            await _db.SaveChangesAsync();
-
-            var evt = new PaymentRefundedEvent
-            {
-                BookingId = payment.BookingId,
-                PaymentId = payment.Id
-            };
-            PublishEvent("payment_refunded", evt);
-
-            return Ok(payment);
-        }
-    
-
-
-        
-        private void PublishEvent<T>(string queue, T @event)
-        {
-            try
-            {
-                using var connection = _factory.CreateConnection();
-                using var channel    = connection.CreateModel();
-                channel.QueueDeclare(queue: queue, durable: false, exclusive: false, autoDelete: false, arguments: null);
-
-                var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(@event));
-                channel.BasicPublish(exchange: "", routingKey: queue, basicProperties: null, body: body);
-                Console.WriteLine($"📤 Event published to {queue}");
-            }
-            catch (BrokerUnreachableException ex)
-            {
-                // Development sırasında RabbitMQ bağlantı hatası olursa hata fırlatma.
-                Console.WriteLine($"⚠️ Dev mode: RabbitMQ’a bağlanamadı, event atlaması yapılıyor. Detay: {ex.Message}");
-            }
-        }
-
     }
 }
 
-   
 
 
 
