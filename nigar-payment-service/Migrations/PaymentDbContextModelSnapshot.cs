@@ -33,8 +33,9 @@ namespace nigar_payment_service.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
-                    b.Property<long>("BookingId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("BookingId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("CardLast4")
                         .IsRequired()
@@ -65,6 +66,50 @@ namespace nigar_payment_service.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("nigar_payment_service.Models.PaymentHistory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GatewayResponse")
+                        .HasColumnType("text");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OldStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("PaymentId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentHistories");
+                });
+
+            modelBuilder.Entity("nigar_payment_service.Models.PaymentHistory", b =>
+                {
+                    b.HasOne("nigar_payment_service.Models.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Payment");
                 });
 #pragma warning restore 612, 618
         }

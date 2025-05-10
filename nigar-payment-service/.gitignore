@@ -1,0 +1,14 @@
+bin/
+obj/
+
+# Python sanal ortamı
+venv/
+
+# Eğer frontend varsa
+frontend/node_modules/
+# Eğer backend varsa
+backend/node_modules/
+
+
+
+

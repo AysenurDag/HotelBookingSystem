@@ -5,7 +5,7 @@ namespace nigar_payment_service.Events
     public class BookingCreatedEvent
     {
         [JsonPropertyName("bookingId")]
-        public long BookingId { get; set; }
+        public string BookingId { get; set; }
 
         [JsonPropertyName("userId")]
         public string UserId { get; set; } = null!;
@@ -13,8 +13,8 @@ namespace nigar_payment_service.Events
         [JsonPropertyName("totalAmount")]
         public decimal TotalAmount { get; set; }
 
-        [JsonPropertyName("currency")]
-        public string Currency { get; set; } = null!;
+        //[JsonPropertyName("currency")]
+        //public string Currency { get; set; } = null!;
     }
 }
 

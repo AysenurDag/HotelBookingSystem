@@ -42,30 +42,6 @@ services:
     networks:
       - microservices-network
 
-  auth-user-service:
-    build:
-      context: ./auth-user-service
-    ports:
-      - "5045:80"
-    environment:
-      - ConnectionStrings__DefaultConnection=Server=10.48.169.102,1433;Database=AuthUserDb;User Id=LastUser;Password=lastuser123;TrustServerCertificate=True;
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    depends_on:
-      - redis
-      - rabbitmq
-
-  api-gateway:
-    build:
-      context: ./api-gateway
-    ports:
-      - "5000:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    depends_on:
-      - auth-user-service
-
   payment-db:
     image: postgres:15
     container_name: payment-db
@@ -136,7 +112,7 @@ services:
       dockerfile: Dockerfile
     container_name: hotel-service
     ports:
-      - "5000:5000"
+      - "5002:5000"
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=development

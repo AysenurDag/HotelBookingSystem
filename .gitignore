@@ -53,16 +53,13 @@ dist/
 #############################
 # Java / Spring Boot
 #############################
-# Maven
-target/
-!.mvn/wrapper/maven-wrapper.jar
+
 
 # Gradle
 .gradle/
 build/
 !gradlew
 !gradlew.bat
-!gradle-wrapper.jar
 !gradle-wrapper.properties
 
 # IntelliJ
@@ -106,7 +103,6 @@ _ReSharper*/
 
 # IDE tarafından oluşturulan docs, vs.
 *.class
-*.jar
 *.war
 *.ear
 *.db

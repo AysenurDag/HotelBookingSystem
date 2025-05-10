@@ -36,12 +36,9 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
     };
 });
 
-
-builder.Services.AddSingleton<IPaymentGateway, RuleBasedPaymentGateway>();
-
-// BookingCreatedConsumer’ı Hosted Service olarak ekle
-builder.Services.AddHostedService<BookingCreatedConsumer>();
-
+builder.Services
+       .AddSingleton<IPaymentGateway, RuleBasedPaymentGateway>()
+       .AddHostedService<BookingCreatedConsumer>();
 
 
 // MVC + Swagger
@@ -52,11 +49,11 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // 4) Startup’da otomatik migrate
-using(var scope = app.Services.CreateScope())
-{
-  var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
-  db.Database.Migrate();
-}
+//using(var scope = app.Services.CreateScope())
+//{
+ // var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+ // db.Database.Migrate();
+//}
 
 app.UseCors();
 
