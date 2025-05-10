@@ -44,7 +44,55 @@ namespace nigar_payment_service.Controllers
             var p = await _db.Payments.FindAsync(id);
             return p == null ? NotFound() : Ok(p);
         }
+        
+        // GET api/payments/{bookingId}
+        [HttpGet("{bookingId}")]
+        public async Task<IActionResult> GetStatus(long bookingId)
+        {
+            var payment = await _db.Payments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.BookingId == bookingId);
 
+            if (payment == null)
+                return NotFound(new { Message = "Payment not found" });
+
+            return Ok(new
+            {
+                payment.BookingId,
+                payment.Id,
+                payment.Status,
+                payment.FailureReason
+            });
+        }
+
+
+      // POST api/payments
+        [HttpPost]
+        public async Task<IActionResult> StartPayment([FromBody] PaymentRequestDto dto)
+        {
+            // 1) Record pending payment
+            var payment = new Payment
+            {
+                BookingId = dto.BookingId,
+                CustomerId = dto.CustomerId,
+                Amount = dto.Amount,
+                Status = PaymentStatus.Pending,
+                CreatedAt = DateTime.UtcNow,
+                CorrelationId = dto.CorrelationId,
+                CardLast4 = dto.CardNumber.Substring(dto.CardNumber.Length - 4)
+            };
+
+            _db.Payments.Add(payment);
+            await _db.SaveChangesAsync();
+
+            // 2) Trigger gateway
+            var response = await _gateway.ProcessAsync(dto);
+
+            // 3) Return initial status
+            return AcceptedAtAction(nameof(GetStatus),
+                new { bookingId = payment.BookingId },
+                new { payment.BookingId, payment.Id, response.Status });
+        }
 
         [HttpGet("user/{customerId}")]
         public async Task<IActionResult> GetByUser(string customerId)
