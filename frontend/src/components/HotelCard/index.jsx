@@ -1,11 +1,16 @@
 // src/components/HotelCard/index.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
 import './HotelCard.css';
+import { useNavigate } from 'react-router-dom';
 
 const HotelCard = ({ hotel }) => {
+    const navigate = useNavigate(); // 💡 bu da gerekli
+
+  const handleViewDetails = () => {
+    navigate(`/hotel/${hotel.id}`);
+  };
   // Parse address from string to object
-  let address = { street: '', city: '', country: '' };
+  let address = {city: '', country: '' };
   try {
     if (hotel.address) {
       // Remove single quotes and replace them with double quotes for valid JSON
@@ -19,9 +24,8 @@ const HotelCard = ({ hotel }) => {
   // Get the first image or use a placeholder
   const primaryImage = hotel.images && hotel.images.length > 0 
     ? hotel.images[0] 
-    : '/placeholder-hotel.jpg';
-  
-  // Calculate price (this would come from your actual data in a real app)
+    : '/images/antalya.jpg';
+
   const price = Math.floor(Math.random() * 200) + 100; // Placeholder random price
   
   return (
@@ -55,7 +59,7 @@ const HotelCard = ({ hotel }) => {
           <span className="rating-label">
             {hotel.rating >= 4.5 ? 'Excellent' : 
              hotel.rating >= 4.0 ? 'Very Good' : 
-             hotel.rating >= 3.5 ? 'Good' : 'Average'}
+             hotel.rating >= 3.0 ? 'Good' : 'Average'}
           </span>
         </div>
       </div>
@@ -63,9 +67,8 @@ const HotelCard = ({ hotel }) => {
       <div className="hotel-price">
         <div className="price-amount">${price}</div>
         <div className="price-period">per night</div>
-        <Link to={`/hotel/${hotel.id || 'detail'}`} className="view-details-btn">
-          View Details
-        </Link>
+           <button onClick={handleViewDetails}>View Details</button>
+
       </div>
     </div>
   );
