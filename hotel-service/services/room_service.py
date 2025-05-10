@@ -12,7 +12,7 @@ class RoomService:
 
     def _serialize_room(self, room):
         return {
-            "id": str(room["_id"]),
+            "id": str(room.get("_id")),
             "hotel_id": str(room.get("hotel_id")) if room.get("hotel_id") else None,
             "room_number": room.get("room_number"),
             "type": room.get("type"),

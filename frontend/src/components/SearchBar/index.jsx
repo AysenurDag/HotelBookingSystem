@@ -63,7 +63,6 @@ const SearchBar = ({ initialValues = {}, onSearch }) => {
         value={formValues.country}
         onChange={handleChange}
         placeholder="e.g. Türkiye"
-        required
       />
     </div>
 

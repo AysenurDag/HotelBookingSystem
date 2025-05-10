@@ -55,3 +55,64 @@ export const searchHotels = async (searchParams) => {
     throw error;
   }
 };
+
+
+export const searchRooms = async (searchParams) => {
+  const API_URL = process.env.REACT_APP_API_KEY;
+
+  try {
+    const queryParams = new URLSearchParams();
+
+    if (searchParams.hotel_id) {
+      queryParams.set('hotel_id', searchParams.hotel_id);
+    }
+
+    if (searchParams.type) {
+      queryParams.set('type', searchParams.type);
+    }
+
+    if (searchParams.min_price) {
+      queryParams.set('min_price', searchParams.min_price);
+    }
+
+    if (searchParams.max_price) {
+      queryParams.set('max_price', searchParams.max_price);
+    }
+
+    if (searchParams.capacity) {
+      queryParams.set('capacity', searchParams.capacity);
+    }
+
+    queryParams.set('page', searchParams.page || 1);
+    queryParams.set('per_page', searchParams.perPage || 20);
+
+    console.log(`Making request to: ${API_URL}/rooms?${queryParams.toString()}`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+
+    const response = await fetch(`${API_URL}/rooms?${queryParams.toString()}`, {
+      signal: controller.signal,
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error('Request timed out');
+      throw new Error('The request timed out. The server might be busy or unavailable.');
+    }
+
+    console.error('Error searching rooms:', error);
+    throw error;
+  }
+};

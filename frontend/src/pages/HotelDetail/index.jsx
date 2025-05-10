@@ -1,50 +1,60 @@
-// src/pages/HotelDetail.jsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import useRoomSearch from '../../hooks/useRoomSearch';
+import RoomSearchBar from '../../components/RoomSearchBar';
+import RoomCard from '../../components/RoomCard';
 
 const HotelDetail = () => {
-  const { id } = useParams(); // /hotel/:id
-  const [rooms, setRooms] = useState([]);
-  const [hotel, setHotel] = useState(null);
+  const { hotelId } = useParams();
 
-  useEffect(() => {
-    const fetchHotelAndRooms = async () => {
-      try {
-        // Otel bilgisi
-        const hotelRes = await axios.get(`/api/hotels/${id}`);
-        setHotel(hotelRes.data);
+  const {
+    rooms,
+    loading,
+    error,
+    pagination,
+    updateSearch,
+    goToPage,
+  } = useRoomSearch({
+    hotel_id: hotelId,
+    page: 1,
+    perPage: 20,
+  });
 
-        // Oda bilgisi
-        const roomRes = await axios.get(`/api/rooms?hotel_id=${id}`);
-        setRooms(roomRes.data.data); // API response -> { data: rooms, meta: { ... } }
-      } catch (err) {
-        console.error('Error fetching hotel or rooms:', err);
-      }
-    };
-
-    fetchHotelAndRooms();
-  }, [id]);
-
-  if (!hotel) return <div>Loading...</div>;
+  const handleSearch = (filters) => {
+    updateSearch({
+      hotel_id: hotelId,
+      ...filters,
+    });
+  };
 
   return (
-    <div className="hotel-detail-page">
-      <h1>{hotel.name}</h1>
-      <p>{hotel.description}</p>
+    <div>
+      <h2>Available Rooms</h2>
 
-      <h2>Rooms</h2>
-      {rooms.length === 0 ? (
-        <p>No rooms available for this hotel.</p>
-      ) : (
-        <ul>
-          {rooms.map(room => (
-            <li key={room.id}>
-              <strong>{room.room_number}</strong> – {room.type} – ${room.price_per_night}
-            </li>
-          ))}
-        </ul>
-      )}
+      <RoomSearchBar onSearch={handleSearch} />
+
+      {loading && <p>Loading...</p>}
+      {error && <p>Error: {error}</p>}
+
+      {rooms.map((room) => (
+        <RoomCard key={room.room_number} room={room} />
+      ))}
+
+      <div>
+        <button
+          onClick={() => goToPage(pagination.page - 1)}
+          disabled={pagination.page === 1}
+        >
+          Previous
+        </button>
+        <span> Page {pagination.page} </span>
+        <button
+          onClick={() => goToPage(pagination.page + 1)}
+          disabled={rooms.length < pagination.perPage}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

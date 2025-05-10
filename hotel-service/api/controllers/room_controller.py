@@ -8,6 +8,7 @@ room_service = RoomService()
 
 # Swagger Models
 room_model = room_ns.model('Room', {
+    'id': fields.String(readOnly=True),
     'hotel_id': fields.String(required=True),
     'room_number': fields.String(required=True),
     'type': fields.String(required=True, enum=['single', 'double', 'twin', 'suite', 'deluxe']),

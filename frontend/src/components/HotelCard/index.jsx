@@ -6,21 +6,16 @@ import { useNavigate } from 'react-router-dom';
 const HotelCard = ({ hotel }) => {
     const navigate = useNavigate(); // 💡 bu da gerekli
 
-  const handleViewDetails = () => {
-    navigate(`/hotel/${hotel.id}`);
-  };
-  // Parse address from string to object
-  let address = {city: '', country: '' };
-  try {
-    if (hotel.address) {
-      // Remove single quotes and replace them with double quotes for valid JSON
-      const cleanedAddress = hotel.address.replace(/'/g, '"');
-      address = JSON.parse(cleanedAddress);
-    }
-  } catch (error) {
-    console.error('Error parsing address:', error);
+    const handleViewDetails = () => {
+      navigate(`/hotel/${hotel.id}`);
+    };
+  let address = { city: '', country: '' };
+
+  if (hotel.address && typeof hotel.address === 'object') {
+    address = hotel.address;
   }
-  
+
+
   // Get the first image or use a placeholder
   const primaryImage = hotel.images && hotel.images.length > 0 
     ? hotel.images[0] 
