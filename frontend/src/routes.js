@@ -4,6 +4,7 @@ import Home from "./pages/home";
 import Login from "./pages/login";
 import Results from "./pages/results";
 import Layout from "./components/Layout";
+import HotelDetail from './pages/HotelDetail';
 
 const AppRoutes = () => {
   return (
@@ -26,6 +27,7 @@ const AppRoutes = () => {
           }
         />
         <Route path="/results" element={<Results />} />
+        <Route path="/hotel/:id" element={<HotelDetail />} />
       </Routes>
     </BrowserRouter>
   );

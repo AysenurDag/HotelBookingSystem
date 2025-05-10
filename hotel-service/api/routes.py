@@ -7,6 +7,7 @@ def setup_routes(api):
     # Import controllers
     from api.controllers.hotel_controller import hotel_ns, HotelList, Hotel
     from api.controllers.room_controller import room_ns
+    from api.controllers.room_availability_controller import room_availability_ns    
     
     # Add health check endpoints directly to the blueprint (no Swagger)
     @api_blueprint.route('/health', methods=['GET'])
@@ -20,8 +21,7 @@ def setup_routes(api):
     # Register namespaces with the API
     api.add_namespace(hotel_ns, path='/hotels')
     api.add_namespace(room_ns, path='/rooms')
-
-    # hotel_ns.add_resource(HotelList, '')
-    # hotel_ns.add_resource(Hotel, '/<string:hotel_id>')
+    api.add_namespace(room_availability_ns, path='/roomAvailability')
+   
     
     return api
