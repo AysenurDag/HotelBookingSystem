@@ -17,6 +17,7 @@ public class RabbitMQConfig {
     public static final String PAYMENT_SUCCEEDED_QUEUE = "payment.success.queue";
     public static final String PAYMENT_FAILED_QUEUE = "payment.failed.queue";
     public static final String RESERVATION_CREATED_QUEUE = "booking.reservation.created.queue";
+    public static final String BOOKING_CANCELLED_QUEUE = "booking.cancelled.queue";
 
     @Bean
     public TopicExchange exchange() {
@@ -41,6 +42,18 @@ public class RabbitMQConfig {
     @Bean
     public Queue reservationCreatedQueue() {
         return new Queue(RESERVATION_CREATED_QUEUE);
+    }
+
+    @Bean
+    public Queue bookingCancelledQueue() {
+        return new Queue(BOOKING_CANCELLED_QUEUE);
+    }
+
+    @Bean
+    public Binding bookingCancelledBinding() {
+        return BindingBuilder.bind(bookingCancelledQueue())
+                .to(exchange())
+                .with("booking.cancelled");
     }
 
     @Bean

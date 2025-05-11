@@ -1,5 +1,6 @@
 package com.trivago.buse_booking_service.messaging.booking_to_payment.producer;
 
+import com.trivago.buse_booking_service.messaging.booking_to_payment.BookingCancelledEvent;
 import com.trivago.buse_booking_service.messaging.booking_to_payment.BookingCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,5 +21,11 @@ public class BookingEventProducer {
     public void sendBookingCreatedEvent(BookingCreatedEvent event) {
         log.info("📤 Sending BookingCreatedEvent: bookingId={} to routingKey=booking.created", event.getBookingId());
         rabbitTemplate.convertAndSend(EXCHANGE, "booking.created", event);
+    }
+
+    public void sendBookingCancelledEvent(BookingCancelledEvent event) {
+        log.info("📤 Sending BookingCancelledEvent: bookingId={} to routingKey=booking.cancelled",
+                event.getBookingId());
+        rabbitTemplate.convertAndSend(EXCHANGE, "booking.cancelled", event);
     }
 }
