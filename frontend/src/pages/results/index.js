@@ -9,18 +9,19 @@ const SearchResults = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Extract search parameters from URL
+  // Extract and normalize search parameters from URL
   const queryParams = new URLSearchParams(location.search);
+
   const initialSearchParams = {
     page: parseInt(queryParams.get('page') || '1', 10),
-    perPage: parseInt(queryParams.get('perPage') || '10', 10),
+    per_page: parseInt(queryParams.get('per_page') || '10', 10),
     city: queryParams.get('city') || '',
     country: queryParams.get('country') || '',
     rating: queryParams.get('rating') ? parseInt(queryParams.get('rating'), 10) : '',
-    amenities: queryParams.getAll('amenities') || []
+    amenities: queryParams.getAll('amenities') || [],
   };
 
-  // Use our custom hook
+  // Custom hook to fetch hotel data
   const {
     searchParams,
     updateSearch,
@@ -31,22 +32,23 @@ const SearchResults = () => {
     goToPage
   } = useHotelSearch(initialSearchParams);
 
-  // Handle search form submission
+  // Update search when form is submitted
   const handleSearch = (newSearchValues) => {
     const newQueryParams = new URLSearchParams();
+
     Object.entries({ ...newSearchValues, page: 1 }).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         value.forEach((item) => newQueryParams.append(key, item));
-      } else if (value !== '') {
+      } else if (value !== '' && value !== null) {
         newQueryParams.set(key, value);
       }
     });
 
-    navigate(`/search?${newQueryParams.toString()}`);
+    navigate(`/results?${newQueryParams.toString()}`);
     updateSearch({ ...newSearchValues, page: 1 });
   };
 
-  // Handle pagination with URL update
+  // Handle pagination buttons
   const handlePageChange = (page) => {
     const updatedParams = { ...searchParams, page };
     const query = new URLSearchParams();
@@ -54,16 +56,16 @@ const SearchResults = () => {
     Object.entries(updatedParams).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         value.forEach((v) => query.append(key, v));
-      } else {
+      } else if (value !== '' && value !== null) {
         query.set(key, value);
       }
     });
 
-    navigate(`/search?${query.toString()}`);
+    navigate(`/results?${query.toString()}`);
     goToPage(page);
   };
 
-  const totalPages = Math.ceil(pagination.total / pagination.perPage);
+  const totalPages = Math.ceil(pagination.total / pagination.per_page);
 
   return (
     <div className="search-results-pages">

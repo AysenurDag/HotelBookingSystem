@@ -13,14 +13,10 @@ public class RabbitMQConfig {
 
     public static final String EXCHANGE = "booking.exchange";
 
-    // Eventler ve kuyruğa bağlanacak routing key'ler
     public static final String BOOKING_CREATED_QUEUE = "booking.created.queue";
     public static final String PAYMENT_SUCCEEDED_QUEUE = "payment.success.queue";
     public static final String PAYMENT_FAILED_QUEUE = "payment.failed.queue";
-    public static final String BOOKING_CANCELLED_QUEUE = "booking.cancelled.queue";
     public static final String RESERVATION_CREATED_QUEUE = "booking.reservation.created.queue";
-    public static final String ROOM_FAILED_QUEUE = "hotel.room.failed.queue";
-    public static final String RESERVATION_CONFIRMED_QUEUE = "booking.confirmed.queue";
 
     @Bean
     public TopicExchange exchange() {
@@ -43,23 +39,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue bookingCancelledQueue() {
-        return new Queue(BOOKING_CANCELLED_QUEUE);
-    }
-
-    @Bean
     public Queue reservationCreatedQueue() {
         return new Queue(RESERVATION_CREATED_QUEUE);
-    }
-
-    @Bean
-    public Queue roomFailedQueue() {
-        return new Queue(ROOM_FAILED_QUEUE);
-    }
-
-    @Bean
-    public Queue reservationConfirmedQueue() {
-        return new Queue(RESERVATION_CONFIRMED_QUEUE);
     }
 
     @Bean
@@ -78,26 +59,10 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindingBookingCancelled() {
-        return BindingBuilder.bind(bookingCancelledQueue()).to(exchange()).with("booking.cancelled");
-    }
-
-    @Bean
     public Binding bindingReservationCreated() {
         return BindingBuilder.bind(reservationCreatedQueue()).to(exchange()).with("booking.reservation.created");
     }
 
-    @Bean
-    public Binding bindingRoomFailed() {
-        return BindingBuilder.bind(roomFailedQueue()).to(exchange()).with("hotel.room.failed");
-    }
-
-    @Bean
-    public Binding bindingReservationConfirmed() {
-        return BindingBuilder.bind(reservationConfirmedQueue()).to(exchange()).with("booking.confirmed");
-    }
-
-    // JSON mesaj desteği
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();

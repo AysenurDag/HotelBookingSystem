@@ -1,11 +1,15 @@
-# Java 21 kullanıyorsak Temurin image
+# Build aşaması (Maven + Java 21)
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
+
+WORKDIR /app
+COPY . .
+RUN mvn clean install -DskipTests
+
+# Runtime aşaması (yalnızca JDK)
 FROM eclipse-temurin:21-jdk-alpine
 
-# JAR dosyasını container'a kopyala
-COPY target/buse-booking-service-0.0.1-SNAPSHOT.jar app.jar
+WORKDIR /app
+COPY --from=build /app/target/buse-booking-service-0.0.1-SNAPSHOT.jar app.jar
 
-# Port aç
 EXPOSE 8080
-
-# Uygulama başlat
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
