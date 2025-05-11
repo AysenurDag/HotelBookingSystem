@@ -2,10 +2,14 @@ from flask import current_app
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta, time
 from database import mongo
+from rabbitmq_utils import publish_event
 
 class RoomAvailabilityService:
     def __init__(self, db=None):
-        self._db = db or mongo.db
+        if db is not None:
+            self._db = db
+        else:
+            self._db = mongo.db
 
     def _handle_error(self, message, status=500):
         current_app.logger.error(message)
@@ -64,7 +68,12 @@ class RoomAvailabilityService:
             } for d in generated_dates]
 
             result = self._db.availability.insert_many(documents)
-             
+            booking_id = data.get("bookingId")
+            if booking_id:
+                publish_event("reservation.approved.queue", {
+                    "bookingId": booking_id,
+                    "status": "approved"
+                }) 
             return {"inserted_ids": [str(rid) for rid in result.inserted_ids]}
         except Exception as e:
             return self._handle_error(f"Error creating availability: {str(e)}")
