@@ -1,5 +1,6 @@
 package com.trivago.buse_booking_service.messaging.payment_to_booking.listener;
 
+import com.trivago.buse_booking_service.messaging.payment_to_booking.PaymentFailedEvent;
 import com.trivago.buse_booking_service.messaging.payment_to_booking.PaymentSucceededEvent;
 import com.trivago.buse_booking_service.model.BookingStatus;
 import com.trivago.buse_booking_service.model.Booking;
@@ -34,8 +35,21 @@ public class PaymentEventListener {
                 booking.getRoomId(),
                 booking.getUserId(),
                 booking.getCheckInDate(),
-                booking.getCheckOutDate()
-        );
+                booking.getCheckOutDate());
         reservationEventProducer.sendReservationCreatedEvent(reservationEvent);
     }
+
+    @RabbitListener(queues = "payment.failed.queue")
+    public void handlePaymentFailed(PaymentFailedEvent event) {
+        Long bookingId = event.getBookingId();
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
+
+        booking.setStatus(BookingStatus.FAILED);
+        bookingRepository.save(booking);
+
+        System.out.println("❌ Payment failed for bookingId " + bookingId + ": " + event.getReason());
+    }
+
 }
