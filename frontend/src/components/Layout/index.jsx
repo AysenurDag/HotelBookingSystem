@@ -25,9 +25,7 @@ const Layout = ({ children }) => {
       {isAuth && account && (
         <div className="welcome-bar">
           👋 Welcome, <strong>{account.username}</strong>
-          <button onClick={handleLogout} className="logout-btn">
-            Logout
-          </button>
+         
         </div>
       )}
 

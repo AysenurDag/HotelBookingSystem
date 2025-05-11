@@ -29,3 +29,18 @@
 .header-right a:hover {
   color: #0071c2;
 }
+
+.logout-link {
+  background: none;
+  border: none;
+  color: #333;
+  font-weight: 500;
+  margin-left: 1.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.logout-link:hover {
+  color: #0071c2;
+}
