@@ -145,25 +145,7 @@ services:
     networks:
       - microservices-network    
   
-  payment-migrations:
-    image: mcr.microsoft.com/dotnet/sdk:8.0
-    container_name: payment-migrations
-    volumes:
-      - ./nigar-payment-service:/app
-    working_dir: /app
-    command: >
-      bash -c "
-        dotnet tool install --global dotnet-ef &&
-        /root/.dotnet/tools/dotnet-ef database update
-          --project /app/nigar-payment-service.csproj
-          --context PaymentDbContext
-          --connection 'Host=payment-db;Port=5432;Database=payment_db;Username=postgres;Password=123456'
-      "
-    depends_on:
-      payment-db:
-        condition: service_healthy
-    networks:
-      - microservices-network    
+
 
 networks:
   microservices-network:

@@ -48,12 +48,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 4) Startup’da otomatik migrate
-//using(var scope = app.Services.CreateScope())
-//{
- // var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
- // db.Database.Migrate();
-//}
+using(var scope = app.Services.CreateScope())
+{
+ var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+ db.Database.Migrate();
+}
 
 app.UseCors();
 
