@@ -120,13 +120,13 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/hotel_db
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - RABBITMQ_USER=guest
+      - RABBITMQ_USERNAME=guest
       - RABBITMQ_PASSWORD=guest
     volumes:
       - ./hotel-service:/app
     depends_on:
       - mongodb
-      - rabbitmq
+      - rabbitmq   
     networks:
       - microservices-network
 

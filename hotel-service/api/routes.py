@@ -1,27 +1,17 @@
-from flask import Blueprint, jsonify
-
-# Create the main API blueprint
-api_blueprint = Blueprint('api', __name__)
-
-def setup_routes(api):
-    # Import controllers
-    from api.controllers.hotel_controller import hotel_ns, HotelList, Hotel
+def setup_routes(api, blueprint):
+    from api.controllers.hotel_controller import hotel_ns
     from api.controllers.room_controller import room_ns
-    from api.controllers.room_availability_controller import room_availability_ns    
-    
-    # Add health check endpoints directly to the blueprint (no Swagger)
-    @api_blueprint.route('/health', methods=['GET'])
+    from api.controllers.room_availability_controller import room_availability_ns
+    from flask import jsonify
+
+    @blueprint.route('/health', methods=['GET'])
     def health_check():
         return jsonify({"status": "ok", "service": "hotel-service"})
-    
-    @api_blueprint.route('/', methods=['GET'])
+
+    @blueprint.route('/', methods=['GET'])
     def check():
         return jsonify({"status": "ok"})
-    
-    # Register namespaces with the API
+
     api.add_namespace(hotel_ns, path='/hotels')
     api.add_namespace(room_ns, path='/rooms')
     api.add_namespace(room_availability_ns, path='/roomAvailability')
-   
-    
-    return api
