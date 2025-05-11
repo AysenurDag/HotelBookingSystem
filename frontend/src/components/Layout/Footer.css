@@ -1,12 +1,22 @@
-footer {
+footer.modern-footer {
+  width: 100%;
+  padding: 20px 0;
+  text-align: center;
+  color: #888;
+  background: linear-gradient(90deg, #f4f6f8 0%, #e9edf1 100%);
+  border-top: 1px solid #ddd;
+  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.06);
+  font-family: "Segoe UI", sans-serif;
+  font-size: 15px;
   position: relative;
   bottom: 0;
   left: 0;
   right: 0;
-  border-top: 1px solid #ddd;
-  width: 100%;
-  padding: 12px 0;
-  text-align: center;
-  color: #666;
-  background-color: #f8f8f8;
+}
+
+footer.modern-footer p {
+  margin: 0;
+  color: #444;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
