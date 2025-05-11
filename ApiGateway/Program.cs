@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Yarp.ReverseProxy;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +28,15 @@ builder.Services.AddRateLimiter(_ => _
 
 // 📦 YARP config
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .ConfigureHttpClient((context, handler) =>
+    {
+        if (handler is SocketsHttpHandler socketsHandler)
+        {
+            socketsHandler.SslOptions.RemoteCertificateValidationCallback =
+                (sender, cert, chain, sslPolicyErrors) => true;
+        }
+    });
 
 var app = builder.Build();
 

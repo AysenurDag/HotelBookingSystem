@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIsAuthenticated } from "@azure/msal-react";
+import { msalInstance } from "../../msalInstance";
 import SearchBar from "../../components/SearchBar";
 import BannerSlider from "../../components/BannerSlider";
 import { getCurrentUser } from "../../services/api";
@@ -20,7 +21,6 @@ const HomePage = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Sadece login olduktan sonra API çağır
     if (!isAuth) return;
 
     getCurrentUser()
@@ -41,19 +41,30 @@ const HomePage = () => {
     navigate(`/results?destination=${encodeURIComponent(destination)}`);
   };
 
+  const logoutUser = () => {
+    msalInstance.logoutRedirect({
+      postLogoutRedirectUri: "http://localhost:3000",
+    });
+  };
+
   return (
     <div className="home-container">
       <section className="hero-banner">
         <BannerSlider />
       </section>
 
-      {/* 👤 Login olmuş kullanıcıyı karşılama */}
       {user && (
         <div
           className="welcome-user"
           style={{ margin: "1rem 0", fontSize: "1.1rem" }}
         >
           👋 Welcome, <strong>{user.name || user.email}</strong>
+          <button
+            onClick={logoutUser}
+            style={{ marginLeft: "1rem", padding: "0.4rem 1rem", cursor: "pointer" }}
+          >
+            Logout
+          </button>
         </div>
       )}
 
