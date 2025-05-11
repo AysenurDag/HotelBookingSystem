@@ -1,5 +1,6 @@
 package com.trivago.buse_booking_service.controller;
 
+import com.trivago.buse_booking_service.messaging.booking_to_payment.BookingCancelledEvent;
 import com.trivago.buse_booking_service.messaging.booking_to_payment.BookingCreatedEvent;
 import com.trivago.buse_booking_service.messaging.booking_to_payment.producer.BookingEventProducer;
 import com.trivago.buse_booking_service.model.Booking;
@@ -48,9 +49,21 @@ public class BookingController {
 
     @PostMapping("/{id}/cancel")
     @Operation(summary = "Cancel a booking")
-    public ResponseEntity<Booking> cancelBooking(@PathVariable Long id) {
-        Booking cancelled = bookingService.cancelBooking(id, "Cancelled by user or system");
-        bookingHistoryService.logHistory(cancelled.getBookingId(), "CANCELLED");
+    public ResponseEntity<Booking> cancelBooking(
+            @PathVariable Long id,
+            @RequestParam(name = "reason", required = false, defaultValue = "Cancelled by user") String reason) {
+
+        Booking cancelled = bookingService.cancelBooking(id, reason);
+        bookingHistoryService.logHistory(cancelled.getBookingId(), "CANCELLED: " + reason);
+
+        BookingCancelledEvent event = new BookingCancelledEvent(
+                cancelled.getBookingId().toString(),
+                cancelled.getUserId(),
+                cancelled.getAmount(),
+                cancelled.getCurrency(),
+                reason);
+        bookingProducer.sendBookingCancelledEvent(event);
+
         return ResponseEntity.ok(cancelled);
     }
 
