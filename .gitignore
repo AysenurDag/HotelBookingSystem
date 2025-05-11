@@ -73,8 +73,7 @@ out/
 # .NET (Core / Framework)
 #############################
 # Build outputs
-**/[Bb]in/
-**/[Oo]bj/
+
 **/[Rr]elease*/
 **/[Dd]ebug*/
 
