@@ -17,7 +17,7 @@ def get_rabbitmq_connection():
     try:
         # Get connection parameters from environment variables with defaults
         host = os.getenv('RABBITMQ_HOST', 'localhost')
-        port = int(os.getenv('RABBITMQ_PORT', '15672'))
+        port = int(os.getenv('RABBITMQ_PORT', '5672'))
         username = os.getenv('RABBITMQ_USERNAME', 'guest')
         password = os.getenv('RABBITMQ_PASSWORD', 'guest')
         vhost = os.getenv('RABBITMQ_VHOST', '/')
