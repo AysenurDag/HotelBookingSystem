@@ -33,9 +33,8 @@ namespace nigar_payment_service.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("BookingId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<long>("BookingId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("CardLast4")
                         .IsRequired()

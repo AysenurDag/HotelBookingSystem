@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9578740b-e0dc-46ab-80eb-cbe9cbb39a7e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/nigar-payment-service/Migrations/20250421135756_RenameReservationIdToBookingId.Designer.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nigar-payment-service/Migrations/20250421135756_RenameReservationIdToBookingId.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Receive/obj/Debug/net8.0/Receive.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Receive/obj/Debug/net8.0/Receive.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Receive/obj/Debug/net8.0/Receive.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Receive/obj/Debug/net8.0/Receive.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/Consumers/ReservationCreatedConsumer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/Events/BookingCreatedEvent.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/Events/BookingCreatedEvent.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/Events/RezervationCreatedEvent.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/Migrations/PaymentDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/Migrations/PaymentDbContextModelSnapshot.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/bin/Debug/net8.0/nigar-payment-service.dll" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/bin/Debug/net8.0/nigar-payment-service.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/bin/Debug/net8.0/nigar-payment-service.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/bin/Debug/net8.0/nigar-payment-service.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.csproj.CoreCompileInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.csproj.FileListAbsolute.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.dll" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.sourcelink.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/ref/nigar-payment-service.dll" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/ref/nigar-payment-service.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/refint/nigar-payment-service.dll" beforeDir="false" afterPath="$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/refint/nigar-payment-service.dll" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Receive/obj/Debug/net8.0/Receive.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/Receive/obj/Debug/net8.0/Receive.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/buse-reservation-consumer-test/EventHandlers/ReservationEventHandler.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/buse-reservation-consumer-test/Models/ReservationCreatedEvent.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/buse-reservation-consumer-test/Program.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Aggregates/PaymentAggregate.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Aggregates/PaymentAggregate.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Consumers/BookingCreatedConsumer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Consumers/ReservationCreatedConsumer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Controllers/PaymentsController.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Controllers/PaymentsController.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Controllers/RabbitmqTestController.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Events/BookingCreatedEvent.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Events/PaymentFailedEvent.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Events/PaymentSucceededEvent.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Events/PaymentSucceededEvent.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Events/PaymentSucceededEvent.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Gateways/RuleBasedPaymentGateway.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Gateways/RuleBasedPaymentGateway.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Migrations/20250421135756_RenameReservationIdToBookingId.Designer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Migrations/20250421135756_RenameReservationIdToBookingId.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Migrations/PaymentDbContextModelSnapshot.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Migrations/PaymentDbContextModelSnapshot.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Models/DTOs/PaymentProcessRequest.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Models/DTOs/PaymentProcessRequest.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Models/DTOs/PaymentResponse.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Models/DTOs/PaymentResponse.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Models/Payment.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Models/PaymentStatus.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/Program.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Program.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/Services/PaymentProcessor.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/obj/Debug/net8.0/nigar-payment-service.sourcelink.json" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2vLhVOdVv6E5yPaoWgTeHgQ0HW0" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "nigar-payment-microservice",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "rider.external.source.directories": [
+      "/Users/nigar/Library/Application Support/JetBrains/Rider2024.1/resharper-host/DecompilerCache",
+      "/Users/nigar/Library/Application Support/JetBrains/Rider2024.1/resharper-host/SourcesCache",
+      "/Users/nigar/Library/Application Support/Symbols/src"
+    ]
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9578740b-e0dc-46ab-80eb-cbe9cbb39a7e" name="Changes" comment="" />
+      <created>1743930285131</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1743930285131</updated>
+      <workItem from="1743930287760" duration="5075000" />
+      <workItem from="1745241151154" duration="7242000" />
+    </task>
+    <task id="LOCAL-00001" summary="rabbitmq test fail">
+      <option name="closed" value="true" />
+      <created>1745247148128</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1745247148128</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="rabbitmq test fail" />
+    <option name="LAST_COMMIT_MESSAGE" value="rabbitmq test fail" />
+  </component>
+</project>

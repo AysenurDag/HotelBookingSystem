@@ -13,7 +13,8 @@ services:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      start_period: 30s
+      retries: 10 
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -143,6 +144,8 @@ services:
       - CHOKIDAR_USEPOLLING=true
     networks:
       - microservices-network    
+  
+
 
 networks:
   microservices-network:
