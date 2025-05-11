@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "6237IYnk10Xiz+qBH6/qC1ub83gDF4n8o6k6aCHGF4M=",
+  "Hash": "FyQZJz2VJnHYoB+qHlReOXxU3MSH4QsqQ4rhuS4m7w8=",
   "Source": "nigar-payment-service",
   "BasePath": "_content/nigar-payment-service",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }
