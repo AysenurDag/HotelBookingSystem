@@ -1,8 +1,10 @@
+// src/pages/home/index.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useIsAuthenticated } from "@azure/msal-react";
 import SearchBar from "../../components/SearchBar";
 import BannerSlider from "../../components/BannerSlider";
-import { getCurrentUser } from "../../services/api"; // ✅ token ile kullanıcı bilgisi çeken fonksiyon
+import { getCurrentUser } from "../../services/api";
 import "./HomePage.css";
 
 const exploreDestinations = [
@@ -12,18 +14,24 @@ const exploreDestinations = [
 ];
 
 const HomePage = () => {
+  const isAuth = useIsAuthenticated();
   const navigate = useNavigate();
   const [searchPerformed, setSearchPerformed] = useState(false);
-  const [user, setUser] = useState(null); // ✅ login olan kullanıcı bilgisi
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // Sadece login olduktan sonra API çağır
+    if (!isAuth) return;
+
     getCurrentUser()
       .then((res) => {
         setUser(res);
         console.log("Aktif kullanıcı:", res);
       })
-      .catch((err) => console.log("Kullanıcı bilgisi alınamadı:", err.message));
-  }, []);
+      .catch((err) =>
+        console.log("Kullanıcı bilgisi alınamadı:", err.message)
+      );
+  }, [isAuth]);
 
   const handleSearch = () => {
     setSearchPerformed(true);
@@ -41,7 +49,10 @@ const HomePage = () => {
 
       {/* 👤 Login olmuş kullanıcıyı karşılama */}
       {user && (
-        <div className="welcome-user" style={{ margin: "1rem 0", fontSize: "1.1rem" }}>
+        <div
+          className="welcome-user"
+          style={{ margin: "1rem 0", fontSize: "1.1rem" }}
+        >
           👋 Welcome, <strong>{user.name || user.email}</strong>
         </div>
       )}

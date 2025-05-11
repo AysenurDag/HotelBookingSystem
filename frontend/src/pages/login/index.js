@@ -1,3 +1,4 @@
+//src/pages/login/index.js
 import React from "react";
 import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "../../msalConfig";
