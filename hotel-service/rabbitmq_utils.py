@@ -12,7 +12,38 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_rabbitmq_connection():
+import time
+
+def get_rabbitmq_connection(retries=10, delay=5):
+    """Create and return a connection to RabbitMQ, with retries."""
+    host = os.getenv("RABBITMQ_HOST", "rabbitmq")
+    port = int(os.getenv("RABBITMQ_PORT", "5672"))
+    username = os.getenv("RABBITMQ_USERNAME", "guest")
+    password = os.getenv("RABBITMQ_PASSWORD", "guest")
+    vhost = os.getenv("RABBITMQ_VHOST", "/")
+
+    credentials = pika.PlainCredentials(username, password)
+    parameters = pika.ConnectionParameters(
+        host=host,
+        port=port,
+        virtual_host=vhost,
+        credentials=credentials,
+        heartbeat=600,
+        blocked_connection_timeout=300
+    )
+
+    for attempt in range(1, retries + 1):
+        try:
+            connection = pika.BlockingConnection(parameters)
+            logger.info(f"[{attempt}] Connected to RabbitMQ at {host}:{port}")
+            return connection
+        except AMQPConnectionError as e:
+            logger.warning(f"[{attempt}] RabbitMQ connection failed: {e}")
+            if attempt == retries:
+                logger.error("All connection attempts to RabbitMQ failed.")
+                raise
+            time.sleep(delay)
+
     """Create and return a connection to RabbitMQ."""
     try:
         host = os.getenv("RABBITMQ_HOST", "rabbitmq")
@@ -102,7 +133,7 @@ def publish_event(queue_name, payload):
     try:
         connection = get_rabbitmq_connection()
         channel = connection.channel()
-        channel.queue_declare(queue=queue_name, durable=True)
+        channel.queue_declare(queue=queue_name, durable=True,auto_delete=False)
 
         channel.basic_publish(
             exchange='',
