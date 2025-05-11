@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ozge\\Desktop\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj": {}
+    "/app/nigar-payment-service.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ozge\\Desktop\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj": {
+    "/app/nigar-payment-service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ozge\\Desktop\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj",
+        "projectUniqueName": "/app/nigar-payment-service.csproj",
         "projectName": "nigar-payment-service",
-        "projectPath": "C:\\Users\\ozge\\Desktop\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj",
-        "packagesPath": "C:\\Users\\ozge\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ozge\\Desktop\\HotelBookingSystem\\nigar-payment-service\\obj\\",
+        "projectPath": "/app/nigar-payment-service.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/app/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\ozge\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -43,8 +37,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -92,7 +85,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.408/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
