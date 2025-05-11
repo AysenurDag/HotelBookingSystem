@@ -1,6 +1,6 @@
 namespace nigar_payment_service.Services;
 
-public class IRefundService
+public interface IRefundService
 {
-    
+    Task<decimal> RefundAsync(long paymentId, decimal amount, string reason);
 }
