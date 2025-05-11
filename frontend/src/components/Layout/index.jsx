@@ -1,17 +1,39 @@
+// src/components/Layout.js
 import React from "react";
-import Topbar from "./Topbar";
 import Header from "./Header";
 import Footer from "./Footer";
+import { msalInstance } from "../../msalInstance";
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import "./Layout.css";
 
 const Layout = ({ children }) => {
+  const isAuth = useIsAuthenticated();
+  const { accounts } = useMsal();
+  const account = accounts?.[0];
+
+  const handleLogout = () => {
+    msalInstance.logoutRedirect({
+      postLogoutRedirectUri: "http://localhost:3000",
+    });
+  };
+
   return (
-    <div className="layout">
-      <Topbar />
+    <>
       <Header />
-      <main className="main-content">{children}</main>
+
+      {/* 👤 Welcome bloğu - tam Header altında */}
+      {isAuth && account && (
+        <div className="welcome-bar">
+          👋 Welcome, <strong>{account.username}</strong>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </div>
+      )}
+
+      <main>{children}</main>
       <Footer />
-    </div>
+    </>
   );
 };
 
