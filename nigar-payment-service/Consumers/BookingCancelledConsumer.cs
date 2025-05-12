@@ -1,97 +1,138 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;   
-using Microsoft.Extensions.Hosting;
+using nigar_payment_service.Services; // Make sure this and other namespaces are correct
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Text;
+using System.Text.Json;
 using nigar_payment_service.Events;
-using nigar_payment_service.Services;
 
 namespace nigar_payment_service.Consumers
 {
-    public class BookingCancelledConsumer : BackgroundService
+    public class BookingCancelledConsumer : BackgroundService // Changed from IHostedService to BackgroundService
     {
-        private readonly IConnectionFactory _factory;
-        private readonly IServiceProvider   _services;
-        private IConnection? _connection;
-        private IModel?      _channel;
-
-        const string ExchangeName        = "booking.exchange";
-        const string CancelledQueue      = "booking.cancelled.queue";
-        const string CancelledRoutingKey = "booking.cancelled";
+        private readonly IConnectionFactory _connectionFactory;
+        private readonly IServiceProvider _serviceProvider; // Use IServiceProvider
+        private readonly ILogger<BookingCancelledConsumer> _logger;
+        private IConnection _connection;
+        private IModel _channel;
+        private string _queueName = "booking.cancelled.queue";
 
         public BookingCancelledConsumer(
-            IConnectionFactory factory,
-            IServiceProvider services)
+            IConnectionFactory connectionFactory,
+            IServiceProvider serviceProvider, // Inject IServiceProvider
+            ILogger<BookingCancelledConsumer> logger)
         {
-            _factory  = factory;
-            _services = services;
+            _connectionFactory = connectionFactory;
+            _serviceProvider = serviceProvider; // Store it
+            _logger = logger;
+            InitializeRabbitMQ();
         }
 
-        public override Task StartAsync(CancellationToken cancellationToken)
+        private void InitializeRabbitMQ()
         {
-            _connection = _factory.CreateConnection();
-            _channel    = _connection.CreateModel();
-
-            _channel.ExchangeDeclare(ExchangeName, ExchangeType.Topic, durable: true);
-            _channel.QueueDeclare(CancelledQueue, durable: true, exclusive: false, autoDelete: false);
-            _channel.QueueBind(CancelledQueue, ExchangeName, CancelledRoutingKey);
-            _channel.BasicQos(0, 1, false);
-
-            return base.StartAsync(cancellationToken);
-        }
-
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            var consumer = new AsyncEventingBasicConsumer(_channel!);
-            consumer.Received += async (_, ea) =>
+             try
             {
-                var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-                var evt  = JsonSerializer.Deserialize<BookingCancelledEvent>(json);
-                if (evt == null)
-                {
-                    _channel!.BasicAck(ea.DeliveryTag, false);
-                    return;
-                }
+                _connection = _connectionFactory.CreateConnection();
+                _channel = _connection.CreateModel();
+                _channel.QueueDeclare(queue: _queueName,
+                                     durable: true,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
 
+                 _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            }
+            catch(Exception ex)
+            {
+                 _logger.LogError(ex, "Error initializing RabbitMQ");
+                 // Consider if you want to throw the exception or retry.  For now, log and continue.
+            }
+        }
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            if (_channel == null)
+            {
+                _logger.LogError("RabbitMQ channel is not initialized. Consumer will not start.");
+                return; // Exit if RabbitMQ is not set up.
+            }
+
+            stoppingToken.ThrowIfCancellationRequested();
+
+            var consumer = new AsyncEventingBasicConsumer(_channel);
+            consumer.Received += async (model, ea) =>
+            {
                 try
                 {
-                    Console.WriteLine($"↔ Received booking.cancelled: {evt.BookingId}");
+                    var body = ea.Body.ToArray();
+                    var message = Encoding.UTF8.GetString(body);
+                    var bookingCancelledEvent = JsonSerializer.Deserialize<BookingCancelledEvent>(message);
 
-                    
-                    using var scope = _services.CreateScope();
-                    var refundSvc = scope.ServiceProvider.GetRequiredService<IRefundService>();
+                    if (bookingCancelledEvent != null)
+                    {
+                        _logger.LogInformation($"Received BookingCancelledEvent for BookingId: {bookingCancelledEvent.BookingId}");
 
-                    // refund işlemi ve event publish
-                    await refundSvc.RefundAsync(
-                        paymentId: long.Parse(evt.BookingId),
-                        amount:    evt.Amount,
-                        reason:    evt.Reason);
+                        // *** IMPORTANT: Create a scope here! ***
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            // Resolve the RefundService from the scope
+                            var refundService = scope.ServiceProvider.GetRequiredService<IRefundService>();
+                            // Perform the refund operation
+                              await refundService.RefundAsync(long.Parse(bookingCancelledEvent.BookingId), bookingCancelledEvent.Amount, "Booking Cancelled");
+                            // Since the return type of RefundAsync is now bool, adjust accordingly
+                            bool refundSuccessful = await refundService.RefundAsync(long.Parse(bookingCancelledEvent.BookingId), bookingCancelledEvent.Amount, "Booking Cancelled");
 
-                    _channel!.BasicAck(ea.DeliveryTag, false);
+                            if (refundSuccessful)
+                            {
+                                 _logger.LogInformation($"Refund processed successfully for BookingId: {bookingCancelledEvent.BookingId}");
+                            }
+                            else
+                            {
+                                _logger.LogError($"Refund failed for BookingId: {bookingCancelledEvent.BookingId}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Received null BookingCancelledEvent message.");
+                    }
+                    _channel.BasicAck(ea.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠ Error processing refund: {ex}");
-                    _channel!.BasicNack(ea.DeliveryTag, false, requeue: false);
+                    _logger.LogError(ex, "Error processing BookingCancelledEvent");
+                    _channel.BasicNack(ea.DeliveryTag, false, requeue: true); // or false, depending on your retry policy
                 }
             };
 
-            _channel!.BasicConsume(
-                queue:    CancelledQueue,
-                autoAck:  false,
-                consumer: consumer);
+            _channel.BasicConsume(queue: _queueName,
+                                 autoAck: false, // Manual ACK
+                                 consumer: consumer);
 
-            return Task.CompletedTask;
+            _logger.LogInformation($"Consumer started for queue: {_queueName}");
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+            }
         }
 
         public override void Dispose()
         {
-            _channel?.Close();
-            _connection?.Close();
+            if (_channel != null)
+            {
+                _channel.Close();
+                _channel.Dispose();
+            }
+            if (_connection != null)
+            {
+                _connection.Close();
+                _connection.Dispose();
+            }
             base.Dispose();
         }
     }
