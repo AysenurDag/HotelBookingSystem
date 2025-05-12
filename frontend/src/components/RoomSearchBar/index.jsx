@@ -120,7 +120,7 @@ const RoomSearchBar = ({ onSearch }) => {
         </div>
       </div>
 
-      <div className="second row">
+      <div className="third row">
         <div className="search-input">
           <label htmlFor="check_in">Check-in Date</label>
           <input
@@ -144,9 +144,13 @@ const RoomSearchBar = ({ onSearch }) => {
         </div>
       </div>
 
-      <button type="submit" className="search-button">
-        Search
-      </button>
+
+      <div className="fourth row">
+        <button type="submit" className="search-button">
+          Search
+        </button>
+      </div>
+      
     </form>
   );
 };

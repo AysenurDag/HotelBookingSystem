@@ -4,6 +4,7 @@ import useRoomSearch from '../../hooks/useRoomSearch';
 import RoomSearchBar from '../../components/RoomSearchBar';
 import RoomCard from '../../components/RoomCard';
 import { createBooking } from '../../services/bookingService';
+import './HotelDetail.css'; 
 
 const HotelDetail = () => {
   const { hotelId } = useParams();
@@ -31,16 +32,17 @@ const HotelDetail = () => {
   }, [hotelId, updateSearch]);
 
   useEffect(() => {
-    if (hasInitialSearch.current) return;
+  if (hasInitialSearch.current || !hotelId) return;
 
-    const check_in = sessionStorage.getItem("check_in") || '';
-    const check_out = sessionStorage.getItem("check_out") || '';
+  const check_in = sessionStorage.getItem("check_in") || '';
+  const check_out = sessionStorage.getItem("check_out") || '';
 
-    if (check_in || check_out) {
-      handleSearch({ check_in, check_out, page: 1 });
-      hasInitialSearch.current = true;
-    }
-  }, [handleSearch]);
+  if (check_in || check_out) {
+    handleSearch({ check_in, check_out, page: 1 });
+    hasInitialSearch.current = true;
+  }
+}, [handleSearch, hotelId]);
+
 
   const handleRoomSelect = (room) => {
     setSelectedRoom(room);
@@ -73,8 +75,6 @@ const HotelDetail = () => {
 
   return (
     <div>
-      <h2>Available Rooms in Hotel {hotelId}</h2>
-
       <RoomSearchBar onSearch={handleSearch} />
 
       {loading && <p>Loading...</p>}

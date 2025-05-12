@@ -26,8 +26,17 @@ const AppRoutes = () => {
             </Layout>
           }
         />
-        <Route path="/results" element={<Results />} />
-        <Route path="/hotel/:id" element={<HotelDetail />} />
+        <Route path="/results" element={
+            <Layout>
+              <Results />
+            </Layout>
+          } />
+         
+        <Route path="/hotel/:hotelId" element={
+            <Layout>
+              <HotelDetail />
+            </Layout>
+          } />
       </Routes>
     </BrowserRouter>
   );

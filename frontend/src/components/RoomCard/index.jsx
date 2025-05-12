@@ -23,15 +23,11 @@ const RoomCard = ({ room, isSelected, onSelect }) => {
 
       {room.images?.length > 0 && (
         <img
-          src={room.images[0]}
+          src={room.images[0] || "images/antalya.jpg"}
           alt={`Room ${room.room_number}`}
           className="room-image"
         />
       )}
-
-      <p style={{ color: room.is_active ? 'green' : 'red' }}>
-        {room.is_active ? 'Available' : 'Not Available'}
-      </p>
     </div>
   );
 };
