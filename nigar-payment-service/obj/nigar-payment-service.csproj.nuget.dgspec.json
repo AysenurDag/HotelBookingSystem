@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/app/nigar-payment-service.csproj": {}
+    "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {}
   },
   "projects": {
-    "/app/nigar-payment-service.csproj": {
+    "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/app/nigar-payment-service.csproj",
+        "projectUniqueName": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
         "projectName": "nigar-payment-service",
-        "projectPath": "/app/nigar-payment-service.csproj",
-        "packagesPath": "/root/.nuget/packages/",
-        "outputPath": "/app/obj/",
+        "projectPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
+        "packagesPath": "/Users/nigar/.nuget/packages/",
+        "outputPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/root/.nuget/NuGet/NuGet.Config"
+          "/Users/nigar/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -32,11 +32,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -85,7 +80,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.408/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
