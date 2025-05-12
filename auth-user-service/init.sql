@@ -1,0 +1,13 @@
+-- init.sql
+USE master;
+GO
+CREATE LOGIN LastUser WITH PASSWORD = 'lastuser123', CHECK_POLICY = OFF;
+GO
+CREATE DATABASE AuthUserDb;
+GO
+USE AuthUserDb;
+GO
+CREATE USER LastUser FOR LOGIN LastUser;
+GO
+ALTER ROLE db_owner ADD MEMBER LastUser;
+GO
