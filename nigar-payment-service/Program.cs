@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using nigar_payment_service.Consumers;
 using nigar_payment_service.DbContext;
 using nigar_payment_service.Gateways;
+using nigar_payment_service.Services;
 using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +40,12 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
 builder.Services
        .AddSingleton<IPaymentGateway, RuleBasedPaymentGateway>()
        .AddHostedService<BookingCreatedConsumer>();
+
+builder.Services
+    .AddScoped<IRefundService, RefundService>(); 
+
+builder.Services
+    .AddHostedService<BookingCancelledConsumer>();   
 
 
 // MVC + Swagger
