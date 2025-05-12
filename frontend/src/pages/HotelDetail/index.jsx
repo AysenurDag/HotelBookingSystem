@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import useRoomSearch from '../../hooks/useRoomSearch';
 import RoomSearchBar from '../../components/RoomSearchBar';
@@ -6,6 +6,7 @@ import RoomCard from '../../components/RoomCard';
 
 const HotelDetail = () => {
   const { hotelId } = useParams();
+  const hasInitialSearch = useRef(false); 
 
   const {
     rooms,
@@ -20,24 +21,43 @@ const HotelDetail = () => {
     perPage: 20,
   });
 
-  const handleSearch = (filters) => {
+  const handleSearch = useCallback((filters) => {
     updateSearch({
       hotel_id: hotelId,
       ...filters,
     });
-  };
+  }, [hotelId, updateSearch]);
+
+  useEffect(() => {
+    if (hasInitialSearch.current) return;
+
+    const check_in = sessionStorage.getItem("check_in") || '';
+    const check_out = sessionStorage.getItem("check_out") || '';
+
+    if (check_in || check_out) {
+      handleSearch({
+        check_in,
+        check_out,
+        page: 1,
+      });
+
+      hasInitialSearch.current = true;
+    }
+  }, [handleSearch]); // 💡 useCallback ile sabitlendiği için güvenli
 
   return (
     <div>
-      <h2>Available Rooms</h2>
+      <h2>Available Rooms in Hotel {hotelId}</h2>
 
       <RoomSearchBar onSearch={handleSearch} />
 
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error}</p>}
 
+      {rooms.length === 0 && !loading && <p>No rooms found.</p>}
+
       {rooms.map((room) => (
-        <RoomCard key={room.room_number} room={room} />
+        <RoomCard key={room.id} room={room} />
       ))}
 
       <div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './RoomSearchBar.css';
 
 const RoomSearchBar = ({ onSearch }) => {
@@ -11,9 +11,45 @@ const RoomSearchBar = ({ onSearch }) => {
     check_out: ''
   });
 
+  useEffect(() => {
+    const storedCheckIn = sessionStorage.getItem('check_in') || '';
+    const storedCheckOut = sessionStorage.getItem('check_out') || '';
+
+    const updated = {
+      type: '',
+      min_price: '',
+      max_price: '',
+      capacity: '',
+      check_in: storedCheckIn,
+      check_out: storedCheckOut
+    };
+
+    setFilters(updated);
+
+    if (onSearch && (storedCheckIn || storedCheckOut)) {
+      onSearch({
+        ...updated,
+        min_price: updated.min_price ? Number(updated.min_price) : undefined,
+        max_price: updated.max_price ? Number(updated.max_price) : undefined,
+        capacity: updated.capacity ? Number(updated.capacity) : undefined,
+        page: 1
+      });
+    }
+  }, []);
+
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+
+    // Tarih alanı değiştiğinde sessionStorage'a yaz
+    if (name === 'check_in' || name === 'check_out') {
+      sessionStorage.setItem(name, value);
+    }
+
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = (e) => {

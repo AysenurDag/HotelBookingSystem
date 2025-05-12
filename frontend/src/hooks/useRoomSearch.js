@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { searchRooms } from '../services/hotelService'; 
+import { searchRooms } from '../services/hotelService';
 
 const useRoomSearch = (initialParams = {}) => {
   const [searchParams, setSearchParams] = useState(initialParams);
@@ -22,7 +22,7 @@ const useRoomSearch = (initialParams = {}) => {
       setRooms(data.data || []);
       setPagination((prev) => ({
         ...prev,
-        total: data.meta?.total || 0,
+        total: data.total || 0, // ✅ meta değil, doğrudan total
       }));
     } catch (err) {
       setError(err.message || 'Unknown error');

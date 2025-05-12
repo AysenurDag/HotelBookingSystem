@@ -120,3 +120,58 @@ class RoomService:
             return {"success": True}
         except Exception as e:
             return self._handle_error(f"Error deleting room: {str(e)}")
+        
+    def get_available_rooms_with_fallback(self, filters=None, page=1, per_page=20):
+        filters = filters or {}
+        check_in = filters.get("check_in")
+        check_out = filters.get("check_out")
+        room_query = {}
+
+        if "hotel_id" in filters:
+            room_query["hotel_id"] = ObjectId(filters["hotel_id"])
+        if "type" in filters:
+            room_query["type"] = filters["type"]
+        if "capacity" in filters:
+            room_query["capacity"] = {"$gte": filters["capacity"]}
+        if "min_price" in filters or "max_price" in filters:
+            room_query["price_per_night"] = {}
+            if "min_price" in filters:
+                room_query["price_per_night"]["$gte"] = filters["min_price"]
+            if "max_price" in filters:
+                room_query["price_per_night"]["$lte"] = filters["max_price"]
+
+        skip = (page - 1) * per_page
+        all_rooms = list(self.db.rooms.find(room_query))
+        filtered_rooms = []
+
+        for room in all_rooms:
+            room_id = room["_id"]
+
+            if check_in and check_out:
+                availability_records = list(self.db.availability.find({
+                    "roomId": room_id,
+                    "date": {
+                        "$gte": check_in,
+                        "$lte": check_out
+                    }
+                }))
+
+                if not availability_records:
+                    filtered_rooms.append(room)  # hiç kayıt yoksa müsait say
+                else:
+                    # -1 veya 0 varsa müsait değil
+                    if any(a.get("isAvailable") in [-1, 0] for a in availability_records):
+                        continue
+                    filtered_rooms.append(room)  # tümü 1 ise, ekle
+            else:
+                # check_in/check_out yoksa sadece isAvailable: 1 kayıt varsa dahil et
+                availability_records = list(self.db.availability.find({
+                    "roomId": room_id,
+                    "isAvailable": 1
+                }))
+                if availability_records:
+                    filtered_rooms.append(room)
+
+        total = len(filtered_rooms)
+        rooms_page = filtered_rooms[skip: skip + per_page]
+        return [self._serialize_room(r) for r in rooms_page], total
