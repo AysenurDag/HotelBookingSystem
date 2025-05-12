@@ -1,6 +1,4 @@
 import axios from "axios";
-
-// ① API_BASE mutlaka burada tanımlı olmalı:
 const API_BASE = (process.env.REACT_APP_API_URL || "http://localhost:8082") + "/api/payments";
 
 /**
@@ -12,7 +10,7 @@ export async function getPaymentByBooking(bookingId) {
 }
 
 /**
- * Aynı endpoint kullanılarak status da alınabilir.
+ * Aynı endpoint kullanılarak status da alınır.
  */
 export async function getPaymentStatus(bookingId) {
   return getPaymentByBooking(bookingId);

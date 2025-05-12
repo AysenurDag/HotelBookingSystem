@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PaymentForm from "../../components/payment/PaymentForm";
@@ -47,7 +46,7 @@ export default function PaymentPage() {
     return (
         <div>
             <h1>Ödeme Yap (Rezervasyon #{bookingId})</h1>
-            <p>Ödenecek Tutar: {amount}₺</p>
+           
 
             <PaymentForm
                 bookingId={Number(bookingId)}
