@@ -1,9 +1,17 @@
 import React from 'react';
-import './RoomCard.css'; // Opsiyonel stil dosyası
+import './RoomCard.css';
 
-const RoomCard = ({ room }) => {
+const RoomCard = ({ room, isSelected, onSelect }) => {
+  const handleClick = () => {
+    if (onSelect) onSelect(room);
+  };
+
   return (
-    <div className="room-card">
+    <div
+      className={`room-card ${isSelected ? 'selected' : ''}`}
+      onClick={handleClick}
+      style={{ cursor: 'pointer' }}
+    >
       <h3>Room {room.room_number} - {room.type.toUpperCase()}</h3>
       <p><strong>Capacity:</strong> {room.capacity} person(s)</p>
       <p><strong>Price:</strong> ${room.price_per_night} per night</p>
@@ -15,7 +23,7 @@ const RoomCard = ({ room }) => {
 
       {room.images?.length > 0 && (
         <img
-          src={room.images[0]} // İlk resmi göster
+          src={room.images[0]}
           alt={`Room ${room.room_number}`}
           className="room-image"
         />
