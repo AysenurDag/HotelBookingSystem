@@ -9,11 +9,6 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -21,8 +16,26 @@ services:
 
   redis:
     image: redis
+    container_name: redis
     ports:
       - "6379:6379"
+    networks:
+      - microservices-network
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=saUser.123
+      - MSSQL_PID=Express
+      - MSSQL_AUTHENTICATION_MODE=Mixed
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - microservices-network
 
   booking-db:
     image: mysql:8.0
@@ -32,39 +45,10 @@ services:
       - MYSQL_DATABASE=booking_db
     ports:
       - "3307:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     volumes:
       - booking_db_data:/var/lib/mysql
     networks:
       - microservices-network
-
-  auth-user-service:
-    build:
-      context: ./auth-user-service
-    ports:
-      - "5045:80"
-    environment:
-      - ConnectionStrings__DefaultConnection=Server=10.48.169.102,1433;Database=AuthUserDb;User Id=LastUser;Password=lastuser123;TrustServerCertificate=True;
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    depends_on:
-      - redis
-      - rabbitmq
-
-  api-gateway:
-    build:
-      context: ./api-gateway
-    ports:
-      - "5000:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    depends_on:
-      - auth-user-service
 
   payment-db:
     image: postgres:15
@@ -75,11 +59,6 @@ services:
       - POSTGRES_DB=payment_db
     ports:
       - "5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     volumes:
       - payment_db_data:/var/lib/postgresql/data
     networks:
@@ -92,6 +71,50 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - microservices-network
+
+  auth-user-service:
+    build:
+      context: ./auth-user-service
+    container_name: auth-user-service
+    ports:
+      - "5045:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=AuthUserDb;User Id=LastUser;Password=lastuser123;TrustServerCertificate=True;
+      - ConnectionStrings__RedisConnection=redis:6379
+      - RabbitMq__HostName=rabbitmq
+      - RabbitMq__QueueName=userQueue
+      - AzureAd__Instance=https://login.microsoftonline.com/
+      - AzureAd__Domain=hotelbookingext.onmicrosoft.com
+      - AzureAd__TenantId=1649cae6-96a4-42a7-9f82-3e339752b193
+      - AzureAd__ClientId=f6bc9acf-c194-4221-8145-2afc6775bd46
+      - AzureAd__ClientSecret=Dxr8Q~TGqx_AadxPCzpHBWU3z-C5eyf~Vkdt_a_7
+      - AzureAd__CallbackPath=/signin-oidc
+      - AzureAd__Scopes=api://f6bc9acf-c194-4221-8145-2afc6775bd46/access_as_user
+      - AzureAd__Audience=api://f6bc9acf-c194-4221-8145-2afc6775bd46
+    depends_on:
+      - redis
+      - rabbitmq
+      - mssql
+    networks:
+      - microservices-network
+
+  api-gateway:
+    build:
+      context: ./ApiGateway
+    container_name: api-gateway
+    ports:
+      - "5289:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - auth-user-service
     networks:
       - microservices-network
 
@@ -113,10 +136,8 @@ services:
     build: ./nigar-payment-service
     container_name: payment-service
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      payment-db:
-        condition: service_healthy
+      - payment-db
+      - rabbitmq
     ports:
       - "8082:8080"
     environment:
@@ -131,12 +152,14 @@ services:
       - microservices-network
 
   hotel-service:
-    build: 
+    build:
       context: ./hotel-service
       dockerfile: Dockerfile
     container_name: hotel-service
     ports:
       - "5000:5000"
+    volumes:
+      - ./hotel-service:/app
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=development
@@ -145,8 +168,6 @@ services:
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=guest
       - RABBITMQ_PASSWORD=guest
-    volumes:
-      - ./hotel-service:/app
     depends_on:
       - mongodb
       - rabbitmq
@@ -166,7 +187,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     networks:
-      - microservices-network    
+      - microservices-network
 
 networks:
   microservices-network:
@@ -176,4 +197,5 @@ volumes:
   booking_db_data:
   payment_db_data:
   mongodb_data:
+  mssql_data:
   rabbitmq_data:
