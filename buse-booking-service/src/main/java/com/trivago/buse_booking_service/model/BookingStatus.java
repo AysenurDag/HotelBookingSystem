@@ -29,5 +29,10 @@ public enum BookingStatus {
     /**
      * Payment was successful but later refunded.
      */
-    REFUND
+    REFUND,
+
+    /**
+     * Booking has been completed and is no longer active.
+     */
+    COMPLETED,
 }

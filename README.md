@@ -4,6 +4,8 @@ payment : http://localhost:8082/swagger/index.html
 
 rabit : http://localhost:15672/#/queues
 
+hotel : http://localhost:5050/
+
 # HotelBookingSystem
 
 This project implements a hotel management system using a microservices-based architecture. The system is designed to manage hotel listings, room bookings, user authentication, and payments with strong consistency and failure recovery using the Saga Pattern.
