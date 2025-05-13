@@ -1,4 +1,3 @@
-// Services/RefundService.cs
 using System;
 using System.Text;
 using System.Text.Json;
@@ -15,18 +14,18 @@ namespace nigar_payment_service.Services
     public class RefundService : IRefundService
     {
         private readonly PaymentDbContext _db;
-        private readonly IModel           _channel;
+        private readonly IModel _channel;
         private readonly ILogger<RefundService> _logger;
         private const string ExchangeName = "booking.exchange";
-        private const string QueueName    = "booking.refund.completed.queue";
-        private const string RoutingKey   = "booking.refund.completed";
+        private const string QueueName = "booking.refund.completed.queue";
+        private const string RoutingKey = "booking.refund.completed";
 
         public RefundService(
             PaymentDbContext db,
             IConnectionFactory factory,
             ILogger<RefundService> logger)
         {
-            _db     = db;
+            _db = db;
             _logger = logger;
 
             // RabbitMQ bağlantı + kanal
@@ -35,25 +34,25 @@ namespace nigar_payment_service.Services
 
             // 1) Exchange tanımla
             _channel.ExchangeDeclare(
-                exchange:    ExchangeName,
-                type:        ExchangeType.Topic,
-                durable:     true,
-                autoDelete:  false,
-                arguments:   null);
+                exchange: ExchangeName,
+                type: ExchangeType.Topic,
+                durable: true,
+                autoDelete: false,
+                arguments: null);
 
             // 2) Kuyruk tanımla
             _channel.QueueDeclare(
-                queue:       QueueName,
-                durable:     true,
-                exclusive:   false,
-                autoDelete:  false,
-                arguments:   null);
+                queue: QueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
 
             // 3) Binding (exchange → queue)
             _channel.QueueBind(
-                queue:       QueueName,
-                exchange:    ExchangeName,
-                routingKey:  RoutingKey);
+                queue: QueueName,
+                exchange: ExchangeName,
+                routingKey: RoutingKey);
         }
 
         public async Task<bool> RefundAsync(long bookingId, decimal amount, string reason)
@@ -73,10 +72,10 @@ namespace nigar_payment_service.Services
             }
 
             // Status güncelle
-            payment.Status       = PaymentStatus.Refunded;
-            payment.UpdatedAt    = DateTime.UtcNow;
+            payment.Status = PaymentStatus.Refunded;
+            payment.UpdatedAt = DateTime.UtcNow;
             payment.RefundReason = reason;
-            payment.Amount       = amount;
+            payment.Amount = amount;
             await _db.SaveChangesAsync();
 
             _logger.LogInformation("Refund successful for paymentId={PaymentId}", payment.Id);
@@ -84,23 +83,23 @@ namespace nigar_payment_service.Services
             // Event oluştur
             var evt = new BookingRefundCompletedEvent
             {
-                BookingId    = payment.BookingId.ToString(),
-                UserId       = payment.CustomerId!,
+                BookingId = payment.BookingId.ToString(),
+                UserId = payment.CustomerId!,
                 RefundAmount = payment.Amount,
-                CompletedAt  = DateTime.UtcNow
+                CompletedAt = DateTime.UtcNow
             };
 
             // Publish
-            var body  = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
             var props = _channel.CreateBasicProperties();
-            props.ContentType  = "application/json";
+            props.ContentType = "application/json";
             props.DeliveryMode = 2; // persistent
 
             _channel.BasicPublish(
-                exchange:         ExchangeName,
-                routingKey:       RoutingKey,
-                basicProperties:  props,
-                body:             body);
+                exchange: ExchangeName,
+                routingKey: RoutingKey,
+                basicProperties: props,
+                body: body);
 
             _logger.LogInformation(
                 "Published refund-completed event to queue={Queue}, bookingId={BookingId}",

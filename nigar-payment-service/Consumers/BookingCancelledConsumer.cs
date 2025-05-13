@@ -16,24 +16,24 @@ namespace nigar_payment_service.Consumers
     public class BookingCancelledConsumer : BackgroundService
     {
         private readonly IConnectionFactory _factory;
-        private readonly IServiceProvider   _services;
+        private readonly IServiceProvider _services;
         private readonly ILogger<BookingCancelledConsumer> _logger;
 
         private IConnection? _connection;
-        private IModel?      _channel;
+        private IModel? _channel;
 
         private const string ExchangeName = "booking.exchange";
-        private const string QueueName    = "booking.cancelled.queue";
-        private const string RoutingKey   = "booking.cancelled";
+        private const string QueueName = "booking.cancelled.queue";
+        private const string RoutingKey = "booking.cancelled";
 
         public BookingCancelledConsumer(
             IConnectionFactory factory,
             IServiceProvider services,
             ILogger<BookingCancelledConsumer> logger)
         {
-            _factory  = factory;
+            _factory = factory;
             _services = services;
-            _logger   = logger;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,7 +44,7 @@ namespace nigar_payment_service.Consumers
                 try
                 {
                     _connection = _factory.CreateConnection();
-                    _channel    = _connection.CreateModel();
+                    _channel = _connection.CreateModel();
 
                     _channel.ExchangeDeclare(ExchangeName, ExchangeType.Topic, durable: true);
                     _channel.QueueDeclare(QueueName, durable: true, exclusive: false, autoDelete: false);
@@ -74,7 +74,7 @@ namespace nigar_payment_service.Consumers
                 try
                 {
                     var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-                    var evt  = JsonSerializer.Deserialize<BookingCancelledEvent>(json);
+                    var evt = JsonSerializer.Deserialize<BookingCancelledEvent>(json);
                     if (evt == null)
                     {
                         _channel.BasicAck(ea.DeliveryTag, false);
