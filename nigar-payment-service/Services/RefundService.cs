@@ -70,6 +70,12 @@ namespace nigar_payment_service.Services
                 _logger.LogError("Payment not found for bookingId={BookingId}", bookingId);
                 return false;
             }
+            if (payment.Status == PaymentStatus.Failed)
+            {
+            _logger.LogWarning(
+            $"Cannot refund PaymentId={payment.Id} because its payment status is ‘Failed’");
+            return false;
+            }
 
             // Status güncelle
             payment.Status = PaymentStatus.Refunded;
@@ -84,9 +90,8 @@ namespace nigar_payment_service.Services
             var evt = new BookingRefundCompletedEvent
             {
                 BookingId = payment.BookingId.ToString(),
-                UserId = payment.CustomerId!,
-                RefundAmount = payment.Amount,
-                CompletedAt = DateTime.UtcNow
+                PaymentId = payment.Id,
+                Status    = payment.Status.ToString()
             };
 
             // Publish

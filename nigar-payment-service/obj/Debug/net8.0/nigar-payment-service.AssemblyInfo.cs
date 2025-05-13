@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("nigar-payment-service")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07b8edba286b542e71af5c9abd77e8fa395d2459")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c58dfe653a3babc99ae4f3fd6cdf395fe8c4159d")]
 [assembly: System.Reflection.AssemblyProductAttribute("nigar-payment-service")]
 [assembly: System.Reflection.AssemblyTitleAttribute("nigar-payment-service")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
