@@ -125,4 +125,10 @@ public class BookingController {
     public ResponseEntity<?> getBookingHistory(@PathVariable Long id) {
         return ResponseEntity.ok(bookingHistoryService.getHistoryForBooking(id));
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
 }

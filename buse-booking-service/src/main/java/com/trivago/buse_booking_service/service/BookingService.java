@@ -66,8 +66,27 @@ public class BookingService {
     public Booking cancelBooking(Long bookingId, String reason) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        booking.setStatus(BookingStatus.CANCELLED);
-        return bookingRepository.save(booking);
+
+        switch (booking.getStatus()) {
+            case CANCELLED:
+                throw new IllegalStateException("Rezervasyon zaten iptal edildi. İade süreci başlatıldı.");
+            case REFUND:
+                throw new IllegalStateException("Rezervasyon zaten daha önce iptal edildi ve iade alındı.");
+            case PENDING:
+                throw new IllegalStateException("Ödeme işlemin henüz başlamadı. Lütfen bekleyin.");
+            case FAILED:
+                throw new IllegalStateException("Ödeme işlemi başarısız olduğu için iptal yapılamaz.");
+            case PAID:
+            case COMPLETED:
+                booking.setStatus(BookingStatus.CANCELLED);
+                Booking updated = bookingRepository.save(booking);
+
+                bookingHistoryService.logHistory(updated.getBookingId(), "CANCELLED: " + reason);
+
+                return updated;
+            default:
+                throw new IllegalStateException("Geçersiz rezervasyon durumu: " + booking.getStatus());
+        }
     }
 
     public Map<String, Long> getBookingStatistics() {
