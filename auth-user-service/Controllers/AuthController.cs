@@ -195,21 +195,30 @@ namespace auth_user_service.Controllers
 
         [HttpGet("CurrentUser")]
         [Authorize]
-        public IActionResult GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("preferred_username")?.Value;
-            var name = User.Identity?.Name;
-            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+            // 1) Email claim'i al
+            var email = User.FindFirst(ClaimTypes.Email)?.Value
+                    ?? User.FindFirst("preferred_username")?.Value;
+            if (email == null) return Unauthorized();
 
+            // 2) DB'den kullanıcıyı getir
+            var user = await _userRepo.FindByEmailAsync(email);
+            if (user == null) return NotFound("User not found");
+
+            // 3) Rolleri de DB'den çek
+            var roles = await _userRepo.GetRolesAsync(user);
+
+            // 4) Local GUID'i döndür
             return Ok(new
             {
-                userId,
-                email,
-                name,
+                userId = user.Id,
+                email  = user.Email,
+                name   = user.Name,
                 roles
             });
         }
+
 
 
         [HttpGet("all-users")]
