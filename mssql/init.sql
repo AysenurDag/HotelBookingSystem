@@ -1,18 +1,18 @@
--- Veritabanını oluştur
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'AuthUserDb')
-BEGIN
-    CREATE DATABASE AuthUserDb;
-END
+USE master;
 GO
 
--- Kullanıcıyı oluştur (eğer ihtiyaç varsa)
 IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = 'LastUser')
 BEGIN
     CREATE LOGIN LastUser WITH PASSWORD = 'Aut.Hen.Tication123!';
 END
 GO
 
--- Kullanıcıyı veritabanına ekle
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'AuthUserDb')
+BEGIN
+    CREATE DATABASE AuthUserDb;
+END
+GO
+
 USE AuthUserDb;
 GO
 

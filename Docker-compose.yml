@@ -37,8 +37,6 @@ services:
     volumes:
       - mssql_data:/var/opt/mssql
       - ./mssql/init.sql:/init.sql
-    command: >
-      bash -c "/opt/mssql/bin/sqlservr && sqlcmd -S localhost -U SA -P 'saUser.123' -i /init.sql"
     networks:
       - microservices-network
  

@@ -1,16 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-HOST="$1"
-shift
-CMD="$@"
-
-echo "👉 Bağlantı bekleniyor: $HOST"
-
-until nc -z $(echo "$HOST" | cut -d: -f1) $(echo "$HOST" | cut -d: -f2); do
-  echo "⏳ Bekliyor..."
+echo "⏳ MSSQL port kontrolü başlatılıyor..."
+until nc -z -v -w30 mssql 1433
+do
+  echo "❌ MSSQL henüz hazır değil. Tekrar deneniyor..."
   sleep 2
 done
 
-echo "✅ Servis hazır: $HOST"
-
-exec $CMD
+echo "✅ MSSQL hazır. Servis başlatılıyor..."
+exec "$@"
