@@ -31,6 +31,7 @@ public class BookingController {
     @Autowired
     private BookingEventProducer bookingProducer;
 
+   
     @PostMapping
     @Operation(summary = "Create a new booking")
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
