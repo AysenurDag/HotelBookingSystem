@@ -89,7 +89,7 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=AuthUserDb;User Id=LastUser;Password=Aut.Hen.Tication123!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=AuthUserDb;User Id=LastUser;Password=Aut.Hen.Tication123!;TrustServerCertificate=True;
       - ConnectionStrings__RedisConnection=redis:6379
       - RabbitMq__HostName=rabbitmq
       - RabbitMq__QueueName=userQueue
@@ -173,6 +173,7 @@ services:
     depends_on:
       - mongodb
       - rabbitmq   
+      - mssql
     networks:
       - microservices-network
 

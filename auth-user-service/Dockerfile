@@ -23,4 +23,4 @@ COPY --from=build /app/publish .
 COPY wait-for.sh .
 RUN chmod +x wait-for.sh
 
-ENTRYPOINT ["./wait-for.sh", "host.docker.internal:1433", "dotnet", "auth-user-service.dll"]
+ENTRYPOINT ["./wait-for.sh", "mssql:1433", "dotnet", "auth-user-service.dll"]
