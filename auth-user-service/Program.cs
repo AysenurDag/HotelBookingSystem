@@ -149,6 +149,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AuthUserDbContext>();
+    db.Database.Migrate();
+}
+
 // 9) Middleware sıralaması
 app.UseRouting();
 app.UseCors("AllowReact");

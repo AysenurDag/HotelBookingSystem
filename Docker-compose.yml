@@ -23,7 +23,9 @@ services:
       - microservices-network
 
   mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    build:
+      context: .
+      dockerfile: mssql-tools.Dockerfile
     container_name: mssql
     ports:
       - "1433:1433"
@@ -34,9 +36,12 @@ services:
       - MSSQL_AUTHENTICATION_MODE=Mixed
     volumes:
       - mssql_data:/var/opt/mssql
+      - ./mssql/init.sql:/init.sql
+    command: >
+      bash -c "/opt/mssql/bin/sqlservr && sqlcmd -S localhost -U SA -P 'saUser.123' -i /init.sql"
     networks:
       - microservices-network
-
+ 
   booking-db:
     image: mysql:8.0
     container_name: booking-db
@@ -99,7 +104,6 @@ services:
     depends_on:
       - redis
       - rabbitmq
-      - mssql
     networks:
       - microservices-network
 

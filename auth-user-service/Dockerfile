@@ -15,7 +15,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 EXPOSE 80
 
-# Sadece yayınlanan dosyaları al
-COPY --from=build /app/publish .
+# ❗ netcat (nc) kurulumu
+RUN apt-get update && apt-get install -y netcat-openbsd
 
-ENTRYPOINT ["dotnet", "auth-user-service.dll"]
+# Yayınlanan dosyaları ve bekleme scriptini kopyala
+COPY --from=build /app/publish .
+COPY wait-for.sh .
+RUN chmod +x wait-for.sh
+
+ENTRYPOINT ["./wait-for.sh", "host.docker.internal:1433", "dotnet", "auth-user-service.dll"]
