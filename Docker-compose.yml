@@ -23,7 +23,9 @@ services:
       - microservices-network
 
   mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    build:
+      context: .
+      dockerfile: mssql-tools.Dockerfile
     container_name: mssql
     ports:
       - "1433:1433"
@@ -34,9 +36,10 @@ services:
       - MSSQL_AUTHENTICATION_MODE=Mixed
     volumes:
       - mssql_data:/var/opt/mssql
+      - ./mssql/init.sql:/init.sql
     networks:
       - microservices-network
-
+ 
   booking-db:
     image: mysql:8.0
     container_name: booking-db
@@ -84,7 +87,7 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=AuthUserDb;User Id=LastUser;Password=Aut.Hen.Tication123!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=AuthUserDb;User Id=LastUser;Password=Aut.Hen.Tication123!;TrustServerCertificate=True;
       - ConnectionStrings__RedisConnection=redis:6379
       - RabbitMq__HostName=rabbitmq
       - RabbitMq__QueueName=userQueue
@@ -99,7 +102,6 @@ services:
     depends_on:
       - redis
       - rabbitmq
-      - mssql
     networks:
       - microservices-network
 
@@ -169,6 +171,7 @@ services:
     depends_on:
       - mongodb
       - rabbitmq   
+      - mssql
     networks:
       - microservices-network
 
