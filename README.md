@@ -4,7 +4,7 @@ payment : http://localhost:8082/swagger/index.html
 
 rabit : http://localhost:15672/#/queues
 
-hotel : http://localhost:5050/
+hotel : http://localhost:5050/api/
 
 # HotelBookingSystem
 
