@@ -28,8 +28,8 @@ const HotelCard = ({ hotel }) => {
       <div className="hotel-image">
         <img src={primaryImage} alt={hotel.name} onError={(e) => {
           e.target.onerror = null; 
-          e.target.src = '/antalya.jpg';
-        }} />z
+          e.target.src = '/placeholder-hotel.jpg';
+        }} />
       </div>
       
       <div className="hotel-info">
