@@ -24,7 +24,7 @@ export default function AppRoutes() {
           }
         />
 
-        {/* 2) Ana sayfa – artık public */}
+        {/* 2) Ana sayfa – public */}
         <Route
           path="/"
           element={
@@ -78,7 +78,7 @@ export default function AppRoutes() {
 
         {/* 7) Bilinmeyen route’lar → ana sayfaya */}
         <Route path="*" element={<Navigate to="/" replace />} />
-
+        
       </Routes>
     </BrowserRouter>
   );
