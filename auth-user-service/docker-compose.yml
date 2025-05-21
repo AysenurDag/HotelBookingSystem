@@ -1,5 +1,51 @@
+version: '3.8'
+
 services:
   # 1) SQL Server (AuthUserDb için)
+  auth-user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth-user-service
+    ports:
+      - "5045:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=AuthUserDb;User Id=LastUser;Password=lastuser123;TrustServerCertificate=True;
+      - ConnectionStrings__RedisConnection=redis:6379
+      - RabbitMq__HostName=rabbitmq
+      - RabbitMq__QueueName=userQueue
+      - AzureAd__Instance=https://login.microsoftonline.com/
+      - AzureAd__Domain=hotelbookingext.onmicrosoft.com
+      - AzureAd__TenantId=1649cae6-96a4-42a7-9f82-3e339752b193
+      - AzureAd__ClientId=f6bc9acf-c194-4221-8145-2afc6775bd46
+      - AzureAd__ClientSecret=Dxr8Q~TGqx_AadxPCzpHBWU3z-C5eyf~Vkdt_a_7
+      - AzureAd__CallbackPath=/signin-oidc
+      - AzureAd__Scopes=api://f6bc9acf-c194-4221-8145-2afc6775bd46/access_as_user
+      - AzureAd__Audience=api://f6bc9acf-c194-4221-8145-2afc6775bd46
+    depends_on:
+      - mssql
+      - redis
+      - rabbitmq
+    networks:
+      - hotelbooking-network
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=saUser.123
+      - MSSQL_PID=Express
+      - MSSQL_AUTHENTICATION_MODE=Mixed
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - hotelbooking-network
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -29,61 +75,24 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - microservices-network
+      - hotelbooking-network
 
   # 3) RabbitMQ (Mesaj kuyruğu için)
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
     ports:
       - "5672:5672"
       - "15672:15672"
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - microservices-network
-
-  # 4) AuthUserService
-  auth-user-service:
-    build:
-      context: ./auth-user-service
-      dockerfile: Dockerfile
-    container_name: auth-user-service
-    ports:
-      - "5045:80"    # Host: 5045 → Container: 80 (Kestrel’in dinlediği port)
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      # Veritabanı bağlantısı
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthUserDb;User Id=AuthUserNew;Password=AuthUserNew.123;TrustServerCertificate=True;
-      # Redis
-      - RedisConnection=redis:6379
-      # RabbitMQ
-      - RabbitMq__HostName=rabbitmq
-      - RabbitMq__QueueName=userQueue
-      # (Diğer ayarlar appsettings.json’da kalabilir; gerekirse benzer __ notation ile ekle)
-    depends_on:
-      sqlserver:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
     networks:
-      - microservices-network
+      - hotelbooking-network
 
 networks:
-  microservices-network:
-    driver: bridge
+  hotelbooking-network:
+    name: hotelbooking-network
 
 volumes:
-  sqlserver_data:
-  rabbitmq_data:
+  mssql_data:

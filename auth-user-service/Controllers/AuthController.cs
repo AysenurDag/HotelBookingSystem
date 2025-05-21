@@ -73,18 +73,12 @@ namespace auth_user_service.Controllers
         }
 
 
-
-        /*
-         
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto, [FromServices] EmailService emailService)
         {
             var user = await _userRepo.FindByEmailAsync(dto.Email);
             if (user == null || !await _userRepo.CheckPasswordAsync(user, dto.Password))
                 return Unauthorized("Invalid credentials");
-
-            //if (!user.EmailConfirmed)
-                //return BadRequest("E-posta adresiniz henüz onaylanmamış.");
 
             var code = new Random().Next(100000, 999999).ToString();
             _cache.Set(dto.Email, code, TimeSpan.FromMinutes(5));
@@ -93,32 +87,30 @@ namespace auth_user_service.Controllers
 
             return Ok("2FA code sent to your email address.");
         }
-         
-         */
 
-        /*
+        [HttpPost("verify-2fa")]
+        public async Task<IActionResult> Verify2FA([FromBody] Verify2FADto dto)
+        {
+            if (!_cache.TryGetValue(dto.Email, out string? expectedCode))
+                return BadRequest("No pending 2FA request for this email");
 
+            if (expectedCode != dto.Code)
+                return Unauthorized("Invalid 2FA code");
 
-         [HttpPost("verify-2fa")]
-       public async Task<IActionResult> Verify2FA([FromBody] Verify2FADto dto)
-       {
-           if (!_cache.TryGetValue(dto.Email, out string? expectedCode))
-               return BadRequest("No pending 2FA request for this email");
+            _cache.Remove(dto.Email);
 
-           if (expectedCode != dto.Code)
-               return Unauthorized("Invalid 2FA code");
+            var user = await _userRepo.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return Unauthorized();
 
-           _cache.Remove(dto.Email);
+            // 🧠 Not: Burada dış token yerine kendi JWT token üretmiyorsun çünkü Entra External ID'de login işlemi frontend’ten yapılmalı.
 
-           var user = await _userRepo.FindByEmailAsync(dto.Email);
-           if (user == null)
-               return Unauthorized();
-
-           return Ok("2FA verified. You can now use your Azure access token.");
-       }
+            return Ok("2FA verified. You can now use your Azure access token.");
+        }
 
 
-         */
+
+
 
 
         [HttpPost("change-password")]
@@ -203,21 +195,30 @@ namespace auth_user_service.Controllers
 
         [HttpGet("CurrentUser")]
         [Authorize]
-        public IActionResult GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("preferred_username")?.Value;
-            var name = User.Identity?.Name;
-            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+            // 1) Email claim'i al
+            var email = User.FindFirst(ClaimTypes.Email)?.Value
+                    ?? User.FindFirst("preferred_username")?.Value;
+            if (email == null) return Unauthorized();
 
+            // 2) DB'den kullanıcıyı getir
+            var user = await _userRepo.FindByEmailAsync(email);
+            if (user == null) return NotFound("User not found");
+
+            // 3) Rolleri de DB'den çek
+            var roles = await _userRepo.GetRolesAsync(user);
+
+            // 4) Local GUID'i döndür
             return Ok(new
             {
-                userId,
-                email,
-                name,
+                userId = user.Id,
+                email  = user.Email,
+                name   = user.Name,
                 roles
             });
         }
+
 
 
         [HttpGet("all-users")]
