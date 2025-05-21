@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# SQL Server'ı başlat ve arka planda çalıştır
 /opt/mssql/bin/sqlservr &
 
 # SQL Server'ın hazır hale gelmesini bekle
