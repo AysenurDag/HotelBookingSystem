@@ -14,7 +14,8 @@ def create_app(config_name='default'):
     init_db(app)
 
     # 1. Blueprint'i burada oluştur
-    api_blueprint = Blueprint('api', __name__)
+    api_blueprint = Blueprint('api', __name__, url_prefix='/api')
+
 
     # 2. API nesnesi Blueprint'e bağlanır
     api = Api(

@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { getCurrentUser } from '../../services/api';
 import { useParams } from 'react-router-dom';
 import useRoomSearch from '../../hooks/useRoomSearch';
 import RoomSearchBar from '../../components/RoomSearchBar';
 import RoomCard from '../../components/RoomCard';
+import { createBooking } from '../../services/bookingService';
+import './HotelDetail.css'; 
 
 const HotelDetail = () => {
   const { hotelId } = useParams();
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const hasInitialSearch = useRef(false);
 
   const {
     rooms,
@@ -20,39 +25,83 @@ const HotelDetail = () => {
     perPage: 20,
   });
 
-  const handleSearch = (filters) => {
+  const handleSearch = useCallback((filters) => {
     updateSearch({
       hotel_id: hotelId,
       ...filters,
     });
+  }, [hotelId, updateSearch]);
+
+  useEffect(() => {
+  if (hasInitialSearch.current || !hotelId) return;
+
+  const check_in = sessionStorage.getItem("check_in") || '';
+  const check_out = sessionStorage.getItem("check_out") || '';
+
+  if (check_in || check_out) {
+    handleSearch({ check_in, check_out, page: 1 });
+    hasInitialSearch.current = true;
+  }
+}, [handleSearch, hotelId]);
+
+
+  const handleRoomSelect = (room) => {
+    setSelectedRoom(room);
   };
+
+  const handleCreateBooking = async () => {
+    if (!selectedRoom) return;
+
+    const check_in = sessionStorage.getItem("check_in");
+    const check_out = sessionStorage.getItem("check_out");
+
+    try {
+    const user = await getCurrentUser(); // 🔐 JWT ile gelen kullanıcı
+
+    const bookingData = {
+      roomId: selectedRoom.id,
+      userId: user.id, // ✅ Artık Entra ID’den gelen userId
+      checkInDate: check_in,
+      checkOutDate: check_out,
+      amount: selectedRoom.price_per_night,
+      currency: "USD",
+      status: "PENDING"
+    };
+    const result = await createBooking(bookingData);
+    alert("✅ Booking successful!");
+    console.log("Booking result:", result);
+  } catch (err) {
+    alert("❌ Booking failed: " + err.message);
+    console.error(err);
+  }
+  };
+
+  
 
   return (
     <div>
-      <h2>Available Rooms</h2>
-
       <RoomSearchBar onSearch={handleSearch} />
 
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error}</p>}
+      {rooms.length === 0 && !loading && <p>No rooms found.</p>}
 
       {rooms.map((room) => (
-        <RoomCard key={room.room_number} room={room} />
+        <RoomCard
+          key={room.id}
+          room={room}
+          isSelected={selectedRoom?.id === room.id}
+          onSelect={handleRoomSelect}
+        />
       ))}
 
-      <div>
+      <div style={{ marginTop: '1rem' }}>
         <button
-          onClick={() => goToPage(pagination.page - 1)}
-          disabled={pagination.page === 1}
+          onClick={handleCreateBooking}
+          disabled={!selectedRoom}
+          className="create-booking-button"
         >
-          Previous
-        </button>
-        <span> Page {pagination.page} </span>
-        <button
-          onClick={() => goToPage(pagination.page + 1)}
-          disabled={rooms.length < pagination.perPage}
-        >
-          Next
+          Create Booking
         </button>
       </div>
     </div>

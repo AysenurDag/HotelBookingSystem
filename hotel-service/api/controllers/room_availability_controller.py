@@ -93,3 +93,52 @@ class RoomAvailability(Resource):
         if result.get('error'):
             return {"error": result['error']}, result.get('status_code', 500)
         return {"message": "Availability deleted successfully"}
+from services.room_service import RoomService
+from datetime import datetime
+
+room_service = RoomService()
+
+@room_availability_ns.route('/available-rooms')
+class AvailableRoomList(Resource):
+    @room_availability_ns.doc('get_available_rooms', description="Get rooms with isAvailable: 1 from availability table")
+    @room_availability_ns.param('check_in', 'Check-in date in ISO format (e.g. 2025-06-01)')
+    @room_availability_ns.param('check_out', 'Check-out date in ISO format (e.g. 2025-06-05)')
+    @room_availability_ns.param('type', 'Room type (e.g. single, double)')
+    @room_availability_ns.param('capacity', 'Minimum guest capacity')
+    @room_availability_ns.param('min_price', 'Minimum price per night')
+    @room_availability_ns.param('max_price', 'Maximum price per night')
+    @room_availability_ns.param('hotel_id', 'Hotel ID of the room')
+    @room_availability_ns.param('page', 'Page number for pagination', default=1)
+    @room_availability_ns.param('per_page', 'Results per page for pagination', default=20)
+    def get(self):
+        try:
+            args = request.args
+            filters = {}
+            if args.get("hotel_id"):
+                filters["hotel_id"] = args["hotel_id"]
+            if args.get("type"):
+                filters["type"] = args["type"]
+            if args.get("capacity"):
+                filters["capacity"] = int(args["capacity"])
+            if args.get("min_price"):
+                filters["min_price"] = float(args["min_price"])
+            if args.get("max_price"):
+                filters["max_price"] = float(args["max_price"])
+            if args.get("check_in"):
+                filters["check_in"] = datetime.strptime(args["check_in"], "%Y-%m-%d")
+            if args.get("check_out"):
+                filters["check_out"] = datetime.strptime(args["check_out"], "%Y-%m-%d")
+
+            page = int(args.get("page", 1))
+            per_page = int(args.get("per_page", 20))
+
+            result, total = room_service.get_available_rooms_with_fallback(filters, page, per_page)
+
+            return {
+                "data": result,
+                "total": total
+            }
+
+        except Exception as e:
+            current_app.logger.error(f"❌ Error in available-rooms: {str(e)}")
+            return {"error": str(e)}, 500
