@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { getCurrentUser } from '../../services/api';
 import { useParams } from 'react-router-dom';
 import useRoomSearch from '../../hooks/useRoomSearch';
 import RoomSearchBar from '../../components/RoomSearchBar';
@@ -54,24 +55,28 @@ const HotelDetail = () => {
     const check_in = sessionStorage.getItem("check_in");
     const check_out = sessionStorage.getItem("check_out");
 
+    try {
+    const user = await getCurrentUser(); // 🔐 JWT ile gelen kullanıcı
+
     const bookingData = {
       roomId: selectedRoom.id,
-      userId: "USER-456", // şimdilik hardcoded, login varsa değiştir
+      userId: user.id, // ✅ Artık Entra ID’den gelen userId
       checkInDate: check_in,
       checkOutDate: check_out,
       amount: selectedRoom.price_per_night,
       currency: "USD",
       status: "PENDING"
     };
-
-    try {
-      const result = await createBooking(bookingData);
-      alert("✅ Booking successful!");
-      console.log("Booking result:", result);
-    } catch (err) {
-      alert("❌ Booking failed: " + err.message);
-    }
+    const result = await createBooking(bookingData);
+    alert("✅ Booking successful!");
+    console.log("Booking result:", result);
+  } catch (err) {
+    alert("❌ Booking failed: " + err.message);
+    console.error(err);
+  }
   };
+
+  
 
   return (
     <div>
