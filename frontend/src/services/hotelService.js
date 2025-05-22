@@ -56,7 +56,6 @@ export const searchHotels = async (searchParams) => {
   }
 };
 
-
 export const searchRooms = async (searchParams) => {
   const API_URL = process.env.REACT_APP_API_KEY;
 
@@ -83,15 +82,24 @@ export const searchRooms = async (searchParams) => {
       queryParams.set('capacity', searchParams.capacity);
     }
 
+    if (searchParams.check_in) {
+      queryParams.set('check_in', searchParams.check_in);
+    }
+
+    if (searchParams.check_out) {
+      queryParams.set('check_out', searchParams.check_out);
+    }
+
     queryParams.set('page', searchParams.page || 1);
     queryParams.set('per_page', searchParams.perPage || 20);
 
-    console.log(`Making request to: ${API_URL}/rooms?${queryParams.toString()}`);
+    const url = `${API_URL}/roomAvailability/available-rooms?${queryParams.toString()}`;
+    console.log(`Making request to: ${url}`);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
 
-    const response = await fetch(`${API_URL}/rooms?${queryParams.toString()}`, {
+    const response = await fetch(url, {
       signal: controller.signal,
       mode: 'cors',
       headers: {
@@ -112,7 +120,7 @@ export const searchRooms = async (searchParams) => {
       throw new Error('The request timed out. The server might be busy or unavailable.');
     }
 
-    console.error('Error searching rooms:', error);
+    console.error('Error searching available rooms:', error);
     throw error;
   }
 };

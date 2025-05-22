@@ -60,9 +60,11 @@ export default function AppRoutes() {
         <Route
           path="/payment/:bookingId"
           element={
-            <Layout>
+             <ProtectedRoute>
+                <Layout>
               <PaymentPage />
             </Layout>
+               </ProtectedRoute>
           }
         />
 
@@ -70,15 +72,14 @@ export default function AppRoutes() {
         <Route
           path="/payment/result/:bookingId"
           element={
-            <Layout>
-              <PaymentResultPage />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <PaymentResultPage />
+              </Layout>
+            </ProtectedRoute>
           }
         />
-
-        {/* 7) Bilinmeyen route’lar → ana sayfaya */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-
+  
       </Routes>
     </BrowserRouter>
   );
