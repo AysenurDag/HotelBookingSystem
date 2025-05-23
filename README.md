@@ -338,7 +338,11 @@ This will trigger the payment simulation, and you should see the log output like
 ```
 
 
-![Screenshot 2025-05-24 002203](https://github.com/user-attachments/assets/8a3bf0b5-734b-4f76-adb8-ba963c946b38)
+### **MONITORING**
 
-monitoring
+
+![Screenshot 2025-05-24 014812](https://github.com/user-attachments/assets/68d26868-652d-4ed5-b57b-44f636a6582c)
+![Screenshot 2025-05-24 020437](https://github.com/user-attachments/assets/854a98a4-4eb8-4503-a99b-e80ce2e87f45)
+
+
 
