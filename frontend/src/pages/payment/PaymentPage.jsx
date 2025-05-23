@@ -1,57 +1,56 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import PaymentForm from "../../components/payment/PaymentForm";
-import { getPaymentByBooking, createPayment } from "../../services/paymentService";
-
+import { createBooking } from '../../services/bookingService';
 
 export default function PaymentPage() {
-    const { bookingId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const bookingData = location.state?.bookingData;
 
+    const [bookingId, setBookingId] = useState(null);
     const [info, setInfo] = useState(null);
-    const [loading, setLoad] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        getPaymentByBooking(bookingId)
-            .then(data => {
-                setInfo(data);
-                setLoad(false);
-            })
-            .catch(err => {
-                setError(err.message);
-                setLoad(false);
-            });
-    }, [bookingId]);
-
-    if (loading) return <p>Yükleniyor…</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
-
-    const { amount, customerId } = info;
-
-    const handleSubmit = async cardData => {
+    const handleSubmit = async (cardData) => {
         try {
-            const { trackUrl } = await createPayment({
-                bookingId: Number(bookingId),
-                customerId,
-                amount,
-                ...cardData     // { cardNumber, expiry, cvv }
-            });
-            navigate(`/payment/result/${bookingId}`, { state: { trackUrl } });
+            console.log("🚀 Gönderilen bookingData:", bookingData, typeof bookingData);
+
+            if (!bookingData) {
+                setError("Rezervasyon verisi bulunamadı.");
+                return;
+            }
+
+            setLoading(true);
+
+            const result = await createBooking(bookingData);
+            if (result.error) {
+                alert(result.error);
+                return;
+            }
+
+            const newBookingId = result.bookingId;
+            setBookingId(newBookingId);
+
+            navigate(`/payment/result/${newBookingId}`);
         } catch (e) {
-            alert(e.response?.data?.title || e.message);
+            setError(e.response?.data?.title || e.message);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div>
-            <h1>Ödeme Yap (Rezervasyon #{bookingId})</h1>
-           
+            <h1>Ödeme Yap</h1>
+            {loading && <p>İşleniyor...</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
 
             <PaymentForm
-                bookingId={Number(bookingId)}
-                customerId={customerId}
-                amount={amount}
+                bookingId={bookingId}
+                customerId={info?.customerId}
+                amount={info?.amount}
                 onSubmit={handleSubmit}
             />
         </div>

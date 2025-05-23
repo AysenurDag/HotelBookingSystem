@@ -58,11 +58,13 @@ export default function AppRoutes() {
 
         {/* 5) Ödeme formu */}
         <Route
-          path="/payment/:bookingId"
+          path="/payment"
           element={
-            <Layout>
+             <ProtectedRoute>
+                <Layout>
               <PaymentPage />
             </Layout>
+               </ProtectedRoute>
           }
         />
 
@@ -70,9 +72,11 @@ export default function AppRoutes() {
         <Route
           path="/payment/result/:bookingId"
           element={
-            <Layout>
-              <PaymentResultPage />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <PaymentResultPage />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 

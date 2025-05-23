@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getCurrentUser } from '../../services/api';
-import { useParams } from 'react-router-dom';
+import { useParams,useNavigate } from 'react-router-dom';
 import useRoomSearch from '../../hooks/useRoomSearch';
 import RoomSearchBar from '../../components/RoomSearchBar';
 import RoomCard from '../../components/RoomCard';
-import { createBooking } from '../../services/bookingService';
 import './HotelDetail.css'; 
 
 const HotelDetail = () => {
   const { hotelId } = useParams();
   const [selectedRoom, setSelectedRoom] = useState(null);
   const hasInitialSearch = useRef(false);
+  const navigate = useNavigate();
 
   const {
     rooms,
@@ -67,13 +67,13 @@ const HotelDetail = () => {
       currency: "USD",
       status: "PENDING"
     };
-    const result = await createBooking(bookingData);
-    alert("✅ Booking successful!");
-    console.log("Booking result:", result);
-  } catch (err) {
-    alert("❌ Booking failed: " + err.message);
-    console.error(err);
-  }
+
+    try {
+      console.log("🚀 Gönderilen bookingData:", bookingData, typeof bookingData);
+      navigate(`/payment`, { state: { bookingData } });  // ✅ VERİYİ STATE İLE GÖNDER
+    } catch (err) {
+      alert("❌ Booking failed: " + err.message);
+    }
   };
 
   
