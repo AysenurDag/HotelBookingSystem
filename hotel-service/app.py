@@ -1,7 +1,7 @@
 from factory import create_app
 from database import mongo
 from rabbitmq_utils import consume_messages
-from consumer import handle_message
+from consumer import handle_message, handle_cancellation_message 
 import threading
 import os
 from opentelemetry import trace
@@ -24,14 +24,19 @@ def configure_tracing(app):
 
     FlaskInstrumentor().instrument_app(app)
 
-def start_consumer_thread(app):
+def start_consumer_thread(app, queue_name, callback):
     def start():
         with app.app_context():
-            consume_messages("booking.reservation.created.queue", handle_message)
+            consume_messages(queue_name, callback)
     threading.Thread(target=start, daemon=True).start()
 
 if __name__ == '__main__':
     app = create_app(os.getenv('FLASK_ENV', 'development'))
-    configure_tracing(app)
-    start_consumer_thread(app)
+
+    # Booking reservation oluşturma mesajlarını dinle
+    start_consumer_thread(app, "booking.reservation.created.queue", handle_message)
+
+    # Reservation cancellation mesajlarını dinle
+    start_consumer_thread(app, "booking.reservation.cancelled.queue", handle_cancellation_message)
+
     app.run(host='0.0.0.0', port=5050, debug=app.config['DEBUG'])
