@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Prometheus;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -157,6 +159,7 @@ using (var scope = app.Services.CreateScope())
 
 // 9) Middleware sıralaması
 app.UseRouting();
+app.UseHttpMetrics(); // middleware
 app.UseCors("AllowReact");
 app.UseMiddleware<TokenBlacklistMiddleware>();
 app.UseAuthentication();
@@ -188,5 +191,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.MapControllers();
-app.Run();
+// METRICS + CONTROLLER ENDPOINTLERİ
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapMetrics(); // <- PROMETHEUS /metrics endpoint
+});app.Run();

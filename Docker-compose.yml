@@ -1,4 +1,3 @@
-# version kaldırıldı
 services:
   rabbitmq:
     image: rabbitmq:3-management
@@ -188,9 +187,34 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     networks:
-      - microservices-network    
-  
+      - microservices-network
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "6831:6831/udp"
+    networks:
+      - microservices-network
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - microservices-network
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    networks:
+      - microservices-network
 
 networks:
   microservices-network:

@@ -16,6 +16,23 @@ spring:
     username: guest
     password: guest
 
+management:
+  server:
+    port: 8080
+  endpoints:
+    web:
+      base-path: /actuator  # ← BU SATIR ŞART OLABİLİR
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+
 springdoc:
   api-docs:
     path: /v3/api-docs

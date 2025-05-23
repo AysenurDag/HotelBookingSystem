@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'auth-user-service'
+    static_configs:
+      - targets: ['host.docker.internal:5045']
+
+  - job_name: 'booking-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['booking-service:8080']
+
+  - job_name: 'payment-service'
+    static_configs:
+      - targets: ['payment-service:8080']
+
+  - job_name: 'hotel-service'
+    static_configs:
+      - targets: ['hotel-service:5050']

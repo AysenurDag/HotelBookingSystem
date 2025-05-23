@@ -44,6 +44,18 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
+		<!-- Prometheus için Micrometer desteği -->
+		<dependency>
+    		<groupId>io.micrometer</groupId>
+    		<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+
 		<dependency>
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
