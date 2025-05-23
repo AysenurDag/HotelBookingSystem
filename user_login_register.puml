@@ -1,0 +1,13 @@
+@startuml user_login_register
+actor User
+participant "Frontend"
+participant "UserService"
+
+User -> Frontend : Click "Sign Up"
+Frontend -> UserService : POST /auth/register
+UserService -> UserService : Save User
+
+User -> Frontend : Click "Login"
+Frontend -> UserService : POST /auth/login
+UserService --> Frontend : JWT Token
+@enduml

@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: jdbc:mysql://booking-db:3306/booking_db
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+rabbitmq:
+  exchange:
+    name: booking.exchange
+
+  routing:
+    bookingCreated: booking.created
+    cancelled: booking.cancelled
+    reservationCreated: booking.reservation.created
+    confirmed: booking.confirmed
+    paymentSucceeded: payment.succeeded
+    paymentFailed: payment.failed
+    roomFailed: hotel.room.failed
+
+  queue:
+    bookingCreated: booking.created.queue
+    bookingCancelled: booking.cancelled.queue
+    paymentSucceeded: payment.success.queue
+    paymentFailed: payment.failed.queue
+    roomFailed: hotel.room.failed.queue

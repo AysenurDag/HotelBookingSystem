@@ -1,0 +1,16 @@
+# Visual Studio klas�r�
+.vs/
+*.suo
+
+bin/
+obj/
+
+*.user
+*.suo
+
+# Auth-user-service 
+auth-user-service/ws/auth-user-service/FileContentIndex/
+
+
+
+
