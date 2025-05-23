@@ -1,0 +1,147 @@
+# ------------------------
+# Genel geçici dosyalar
+# ------------------------
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+*.Thumbs.db
+*.~lock.*
+*.orig
+
+# ------------------------
+# İşletim Sistemi Dosyaları
+# ------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.nfs*
+
+# ------------------------
+# IDE & Editor Klasörleri
+# ------------------------
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-workspace
+*.sublime-project
+
+# JetBrains
+*.iml
+out/
+*.ipr
+*.iws
+
+# ------------------------
+# Derleme Çıktıları / Artefaktlar
+# ------------------------
+dist/
+build/
+target/
+bin/
+obj/
+release/
+debug/
+*.o
+*.obj
+*.dll
+*.so
+*.a
+*.exe
+*.out
+*.class
+*.pyc
+*.pyo
+__pycache__/
+
+# ------------------------
+# Node.js
+# ------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ------------------------
+# Python
+# ------------------------
+venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+
+# ------------------------
+# Java / Maven
+# ------------------------
+*.jar
+*.war
+*.ear
+*.class
+*.log
+target/
+
+# ------------------------
+# Git Large File Riskleri
+# ------------------------
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.iso
+*.img
+*.mp4
+*.avi
+*.mov
+*.mp3
+*.wav
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.exe
+*.msi
+*.apk
+
+
+
+# ------------------------
+# Docker
+# ------------------------
+*.pid
+*.sock
+docker-compose.override.yml
+
+
+# ------------------------
+# Logs / Temp
+# ------------------------
+logs/
+*.log
+tmp/
+temp/
+
+# ------------------------
+# Git Ignore for Git Specifics
+# ------------------------
+.gitignore
+.gitattributes
+.gitmodules
