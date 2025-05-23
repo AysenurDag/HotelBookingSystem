@@ -12,7 +12,6 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-        @SuppressWarnings("null")
         List<Booking> findAll();
 
         List<Booking> findByStatus(BookingStatus status);
