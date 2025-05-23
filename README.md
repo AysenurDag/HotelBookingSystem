@@ -336,3 +336,9 @@ This will trigger the payment simulation, and you should see the log output like
 💳 Processing payment for User: user-456, Hotel: hotel-123
 ❌ Payment failed for reservation ID: 1
 ```
+
+
+![Screenshot 2025-05-24 002203](https://github.com/user-attachments/assets/8a3bf0b5-734b-4f76-adb8-ba963c946b38)
+
+monitoring
+
