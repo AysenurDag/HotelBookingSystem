@@ -189,16 +189,6 @@ services:
       - CHOKIDAR_USEPOLLING=true
     networks:
       - microservices-network    
-    jaeger:
-      image: jaegertracing/all-in-one:1.51
-      container_name: jaeger
-      ports:
-        - "16686:16686"   # Jaeger Web UI
-        - "6831:6831/udp" # Agent (UDP)
-        - "14250:14250"   # gRPC exporter için (bazı OpenTelemetry sürümleri bunu kullanır)
-      networks:
-        - microservices-network
-
 
 
 networks:

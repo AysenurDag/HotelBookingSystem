@@ -1,0 +1,40 @@
+/* UserBookings.css */
+
+.user-bookings-container {
+  padding: 2rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.user-bookings-container h2 {
+  margin-bottom: 1rem;
+  color: #23447a;
+  font-size: 24px;
+}
+
+.booking-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-left: 5px solid #23447a;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.booking-card strong {
+  color: #333;
+}
+
+.cancel-button {
+  margin-top: 0.5rem;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  background-color: #c9302c;
+}
