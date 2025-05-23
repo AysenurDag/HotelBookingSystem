@@ -58,7 +58,7 @@ export default function AppRoutes() {
 
         {/* 5) Ödeme formu */}
         <Route
-          path="/payment/:bookingId"
+          path="/payment"
           element={
              <ProtectedRoute>
                 <Layout>
