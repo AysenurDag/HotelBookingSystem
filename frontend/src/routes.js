@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Results from "./pages/results";
@@ -8,6 +8,7 @@ import HotelDetail from './pages/HotelDetail';
 import PaymentPage from "./pages/payment/PaymentPage";
 import PaymentResultPage from "./pages/payment/PaymentResultPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import UserBookingsPage from "./pages/userBookings";
 
 export default function AppRoutes() {
   return (
@@ -79,7 +80,13 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-  
+        <Route path="/user/bookings" element={
+          <ProtectedRoute>
+            <Layout>
+              <UserBookingsPage />
+            </Layout>
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );

@@ -23,10 +23,9 @@ export const createBooking = async (bookingData) => {
   }
 };
 
-// Tüm rezervasyonları getirir
-export const getAllBookings = async () => {
+export const getBookingsByUserId = async (userId) => {
   try {
-    const response = await fetch(`${API_URL}/bookings`, {
+    const response = await fetch(`${API_URL}/bookings/user/${userId}`, {
       method: 'GET',
       headers: {
         Accept: '*/*',
@@ -41,6 +40,30 @@ export const getAllBookings = async () => {
     return await response.json();
   } catch (error) {
     console.error('❌ Get Bookings Error:', error);
+    throw error;
+  }
+};
+
+// bookingService.js
+export const cancelBooking = async (bookingId) => {
+  try {
+    const reason = encodeURIComponent("Cancelled by user");
+    const response = await fetch(`${API_URL}/bookings/${bookingId}/cancel?reason=${reason}`, {
+      method: 'POST',
+      headers: {
+        Accept: '*/*',
+      },
+      body: "Kullanıcı iptali", // çünkü -d '' kullanılmış
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Cancel failed: ${response.status} ${error}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Cancel Booking Error:', error);
     throw error;
   }
 };

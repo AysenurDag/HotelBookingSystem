@@ -19,8 +19,8 @@ export async function getCurrentUser() {
     headers: { Authorization: `Bearer ${token}` }
   });
 
-  sessionStorage.setItem("userId", JSON.stringify(res.data.userId));
-  console.log("Kullanıcı bilgisi :", JSON.stringify(res.data.userId));
+  sessionStorage.setItem("userId", res.data.userId);
+  console.log("Kullanıcı bilgisi :", res.data.userId);
   return res.data;
 
 }
