@@ -12,35 +12,108 @@ This project implements a hotel management system using a microservices-based ar
 
 ---
 
-## 🧩 Services Overview
+## Architecture Overview
+
+The system is composed of four core microservices, each responsible for a distinct domain:
+
+- **Authentication Service**: Manages user registration, login, JWT token generation, and role-based access control.  
+- **Hotel Service**: Stores hotel metadata (details, amenities, ratings) and manages room inventory by date.  
+- **Booking Service**: Handles reservation requests, booking status, and coordinates the Saga.  
+- **Payment Service**: Processes payments, handles failures, and issues refunds.
+
+A central **Saga Orchestrator** (implemented within the Booking Service) ensures distributed transactions across services, triggering compensating actions in case of failures.
+
+---
+
+## Services
 
 ### 🔐 Authentication Service
-
-- **UserAggregate**: Manages user profiles, credentials, and authentication tokens.
-
----
+- **Aggregate**: `UserAggregate` (profiles, credentials)  
+- **Features**:
+  - Secure password hashing with ASP.NET Core Identity  
+  - JWT access and refresh token workflows  
+  - Role-based endpoint authorization
 
 ### 🏨 Hotel Service
-
-- **HotelAggregate**: Contains hotel details, amenities, location, ratings, and policies.
-- **RoomTypeAggregate**: Manages room categories, features, base pricing, and images.
-- **RoomInventoryAggregate**: Handles available rooms by date range, pricing rules, and availability status.
-
----
+- **Aggregates**:
+  - `HotelAggregate` (hotel metadata)  
+  - `RoomInventoryAggregate` (room availability, pricing)  
+- **Features**:
+  - Check and reserve room inventory  
+  - Update availability on booking/cancellation  
+  - Expose REST APIs for inventory queries
 
 ### 📆 Booking Service
-
-- **BookingAggregate**: Stores reservation details, guest information, booking status (confirmed, pending, canceled), and booking history.
-- **ReservationAggregate**: Manages room allocation, check-in/check-out dates, and special requests.
-
----
+- **Aggregate**: `BookingAggregate` (reservation details, status)  
+- **Features**:
+  - Create, confirm, cancel reservations  
+  - Orchestrate Saga to ensure end-to-end consistency  
+  - Expose endpoints for creating and managing bookings
 
 ### 💳 Payment Service
-
-- **PaymentAggregate**: Tracks payment details, payment status, transaction history, and refund information.
-- **InvoiceAggregate**: Contains itemized charges, taxes, discounts, and final pricing.
+- **Aggregate**: `PaymentAggregate` (transaction status, history)  
+- **Features**:
+  - Simulate and process payment authorizations  
+  - Publish success or failure events  
+  - Handle refunds on cancellations
 
 ---
+
+## Saga Pattern & Event Flow
+
+The Saga Pattern is used to manage distributed transactions. Each step emits an event to RabbitMQ; the next service consumes it and acts accordingly. On failure, compensating events are published.
+
+### Event Topics
+
+| Topic/Queue                         | Description                                                    |
+|-------------------------------------|----------------------------------------------------------------|
+| `booking.created.queue`                   | Emitted by Booking Service when a reservation is requested.    |
+| `booking.reservation.created.queue` | Consumed by Payment Service to initiate payment.               |
+| `payment.succeeded.queue`                 | Emitted by Payment Service on successful payment.              |
+| `payment.failed.queue`                    | Emitted by Payment Service on payment failure.                 |
+| `reservation.approved.queue`        | Consumed by Booking Service to confirm reservation.            |
+| `booking.cancelled.queue`                 | Emitted by Booking Service when user cancels.                  |
+| `booking.refund.completed.queue`                  | Emitted by Payment Service after refund is completed.          |
+
+### Step-by-Step Flow
+
+1. **Reservation Requested**  
+   - **Booking Service** creates a pending booking and publishes `booking.created`.  
+   - Payload:  
+     ```json
+     {
+       "reservationId": "...",
+       "userId": "...",
+       "hotelId": "...",
+       "checkIn": "YYYY-MM-DD",
+       "checkOut": "YYYY-MM-DD",
+       "amount": 123.45
+     }
+     ```
+
+2. **Payment Processing**  
+   - **Payment Service** listens on `booking.reservation.created.queue`.  
+   - Attempts authorization; then publishes either:  
+     - `payment.succeeded` (on success)  
+     - `payment.failed` (on failure)
+
+3. **Booking Confirmation or Compensation**  
+   - **Booking Service** listens on the result queues (`payment.succeeded`, `payment.failed`).  
+   - On **success**:  
+     - Publishes `reservation.approved.queue`.  
+     - **Hotel Service** consumes this to finalize inventory decrement.  
+   - On **failure**:  
+     - Marks booking as cancelled.  
+
+4. **Cancellation & Refund**  
+   - When user cancels a confirmed booking, Booking Service publishes `booking.cancelled`.  
+   - **Payment Service** consumes `booking.cancelled`, issues refund, and publishes `refund.processed`.  
+   - **Booking Service** consumes `refund.processed`, updates reservation status to refunded, and triggers inventory restoration in Hotel Service.
+
+---
+
+
+
 
 ## 🔁 Booking Saga Flow
 
