@@ -19,6 +19,8 @@ public class RabbitMQConfig {
     public static final String RESERVATION_CREATED_QUEUE = "booking.reservation.created.queue";
     public static final String BOOKING_CANCELLED_QUEUE = "booking.cancelled.queue";
     public static final String RESERVATION_APPROVED_QUEUE = "reservation.approved.queue";
+    public static final String BOOKING_REFUND_COMPLETED_QUEUE = "booking.refund.completed.queue";
+    public static final String RESERVATION_CANCELLED_QUEUE = "booking.reservation.cancelled.queue";
 
     @Bean
     public TopicExchange exchange() {
@@ -48,6 +50,30 @@ public class RabbitMQConfig {
     @Bean
     public Queue bookingCancelledQueue() {
         return new Queue(BOOKING_CANCELLED_QUEUE);
+    }
+
+    @Bean
+    public Queue bookingRefundCompletedQueue() {
+        return new Queue(BOOKING_REFUND_COMPLETED_QUEUE);
+    }
+
+    @Bean
+    public Queue reservationCancelledQueue() {
+        return new Queue(RESERVATION_CANCELLED_QUEUE);
+    }
+
+    @Bean
+    public Binding bindingReservationCancelled() {
+        return BindingBuilder.bind(reservationCancelledQueue())
+                .to(exchange())
+                .with("booking.reservation.cancelled");
+    }
+
+    @Bean
+    public Binding bindingBookingRefundCompleted() {
+        return BindingBuilder.bind(bookingRefundCompletedQueue())
+                .to(exchange())
+                .with("booking.refund.completed");
     }
 
     @Bean
