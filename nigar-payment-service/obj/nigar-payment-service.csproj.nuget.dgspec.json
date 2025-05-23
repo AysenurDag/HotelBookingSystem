@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {}
+    "/Users/nigar/Desktop/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {}
   },
   "projects": {
-    "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {
+    "/Users/nigar/Desktop/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
+        "projectUniqueName": "/Users/nigar/Desktop/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
         "projectName": "nigar-payment-service",
-        "projectPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
+        "projectPath": "/Users/nigar/Desktop/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
         "packagesPath": "/Users/nigar/.nuget/packages/",
-        "outputPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/obj/",
+        "outputPath": "/Users/nigar/Desktop/HotelBookingSystem/nigar-payment-service/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/nigar/.nuget/NuGet/NuGet.Config"
@@ -64,6 +64,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"
+            },
+            "prometheus-net.AspNetCore": {
+              "target": "Package",
+              "version": "[8.2.1, )"
             }
           },
           "imports": [

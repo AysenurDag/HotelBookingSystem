@@ -4,6 +4,7 @@ using nigar_payment_service.DbContext;
 using nigar_payment_service.Gateways;
 using nigar_payment_service.Services;
 using RabbitMQ.Client;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+// /metrics endpoint’ini açar
+app.UseMetricServer();    
+// HTTP istek metriği toplar
+app.UseHttpMetrics();  
 
 using(var scope = app.Services.CreateScope())
 {
@@ -68,7 +73,7 @@ if (app.Environment.IsDevelopment())
   app.UseSwagger();
   app.UseSwaggerUI();
 }
-
+app.MapMetrics();
 app.UseHttpsRedirection();
 app.MapControllers();
 app.MapGet("/", () => "💳 Payment Service is running!");
