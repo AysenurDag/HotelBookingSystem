@@ -69,7 +69,7 @@ def handle_cancellation_message(ch, method, properties, body):
                 "roomId": room_id,
                 "start_date": check_in,
                 "end_date": check_out,
-                "isAvailable": -1
+                "isAvailable": 1
             }
             
             result = service.create_availability(availability_payload)
