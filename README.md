@@ -23,7 +23,7 @@ This project implements a hotel management system using a microservices-based ar
 ### 🏨 Hotel Service
 
 - **HotelAggregate**: Contains hotel details, amenities, location, ratings, and policies.
-- **RoomTypeAggregate**: Manages room categories, features, base pricing, and images.
+- **RoomTypeAggregate**: Manages room categories, features, base pricing, and  images.
 - **RoomInventoryAggregate**: Handles available rooms by date range, pricing rules, and availability status.
 
 ---
