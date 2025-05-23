@@ -53,10 +53,11 @@ const HotelDetail = () => {
 
     const check_in = sessionStorage.getItem("check_in");
     const check_out = sessionStorage.getItem("check_out");
-
+    const userId = sessionStorage.getItem("userId");
+    
     const bookingData = {
       roomId: selectedRoom.id,
-      userId: "USER-456", // şimdilik hardcoded
+      userId: userId, // şimdilik hardcoded
       checkInDate: check_in,
       checkOutDate: check_out,
       amount: selectedRoom.price_per_night,

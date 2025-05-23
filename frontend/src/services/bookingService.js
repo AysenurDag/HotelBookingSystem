@@ -22,3 +22,25 @@ export const createBooking = async (bookingData) => {
     throw error;
   }
 };
+
+// Tüm rezervasyonları getirir
+export const getAllBookings = async () => {
+  try {
+    const response = await fetch(`${API_URL}/bookings`, {
+      method: 'GET',
+      headers: {
+        Accept: '*/*',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Fetching bookings failed: ${response.status} ${error}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Get Bookings Error:', error);
+    throw error;
+  }
+};

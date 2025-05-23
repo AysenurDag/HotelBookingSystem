@@ -62,10 +62,7 @@ const HomePage = () => {
                   src={dest.image}
                   alt={dest.name}
                   className="promo-image"
-                  onError={(e) =>
-                    (e.target.src =
-                      "https://via.placeholder.com/300x200?text=No+Image")
-                  }
+
                 />
                 <div className="promo-overlay">{dest.name}</div>
               </div>
