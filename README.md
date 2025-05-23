@@ -153,6 +153,19 @@ The **Saga Pattern** is used to handle distributed transactions across services 
 - Each step of the saga includes **compensation logic** to maintain system consistency.
 - A **Saga Orchestrator** tracks the process and triggers compensating actions when necessary.
 
+
+Monitoring & Logging
+
+Prometheus: Service exposes /metrics endpoints for scraping metrics, alerting rules, and dashboarding.
+
+Jaeger: Distributed tracing is enabled instrumentation; traces are collected in Jaeger for end-to-end request analysis across microservices.
+
+Logging: Structured logging with Serilog, shipped to a centralized store for search and analysis.
+
+
+
+
+
 ## Ozge's notes
 
 ## Aysenur's notes
