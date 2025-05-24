@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {}
+    "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj": {}
   },
   "projects": {
-    "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj": {
+    "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
+        "projectUniqueName": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj",
         "projectName": "nigar-payment-service",
-        "projectPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
-        "packagesPath": "/Users/nigar/.nuget/packages/",
-        "outputPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/obj/",
+        "projectPath": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj",
+        "packagesPath": "C:\\Users\\MahsunDağAtolla\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/nigar/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\MahsunDağAtolla\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -37,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -64,6 +71,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"
+            },
+            "prometheus-net.AspNetCore": {
+              "target": "Package",
+              "version": "[8.2.1, )"
             }
           },
           "imports": [
@@ -85,7 +96,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -5,6 +5,8 @@ from consumer import handle_message
 import threading
 import os
 
+
+
 def start_consumer_thread(app):
     from flask import current_app
     def start():

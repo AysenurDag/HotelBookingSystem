@@ -596,6 +596,24 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "Microsoft.Extensions.Http/3.1.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "3.1.0",
+          "Microsoft.Extensions.Logging": "3.1.0",
+          "Microsoft.Extensions.Options": "3.1.0"
+        },
+        "compile": {
+          "lib/netcoreapp3.1/Microsoft.Extensions.Http.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/Microsoft.Extensions.Http.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.Logging/9.0.4": {
         "type": "package",
         "dependencies": {
@@ -635,6 +653,19 @@
         },
         "build": {
           "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.Extensions.ObjectPool/7.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net7.0/Microsoft.Extensions.ObjectPool.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/Microsoft.Extensions.ObjectPool.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Extensions.Options/9.0.4": {
@@ -734,6 +765,42 @@
             "related": ".xml"
           }
         }
+      },
+      "prometheus-net/8.2.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Http": "3.1.0",
+          "Microsoft.Extensions.ObjectPool": "7.0.0"
+        },
+        "compile": {
+          "lib/net7.0/Prometheus.NetStandard.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/Prometheus.NetStandard.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "prometheus-net.AspNetCore/8.2.1": {
+        "type": "package",
+        "dependencies": {
+          "prometheus-net": "8.2.1"
+        },
+        "compile": {
+          "lib/net6.0/Prometheus.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Prometheus.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       },
       "RabbitMQ.Client/6.4.0": {
         "type": "package",
@@ -2588,6 +2655,22 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "Microsoft.Extensions.Http/3.1.0": {
+      "sha512": "DLigdcV0nYaT6/ly0rnfP80BnXq8NNd/h8/SkfY39uio7Bd9LauVntp6RcRh1Kj23N+uf80GgL7Win6P3BCtoQ==",
+      "type": "package",
+      "path": "microsoft.extensions.http/3.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netcoreapp3.1/Microsoft.Extensions.Http.dll",
+        "lib/netcoreapp3.1/Microsoft.Extensions.Http.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.Http.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Http.xml",
+        "microsoft.extensions.http.3.1.0.nupkg.sha512",
+        "microsoft.extensions.http.nuspec",
+        "packageIcon.png"
+      ]
+    },
     "Microsoft.Extensions.Logging/9.0.4": {
       "sha512": "xW6QPYsqhbuWBO9/1oA43g/XPKbohJx+7G8FLQgQXIriYvY7s+gxr2wjQJfRoPO900dvvv2vVH7wZovG+M1m6w==",
       "type": "package",
@@ -2687,6 +2770,25 @@
         "microsoft.extensions.logging.abstractions.9.0.4.nupkg.sha512",
         "microsoft.extensions.logging.abstractions.nuspec",
         "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Extensions.ObjectPool/7.0.0": {
+      "sha512": "udvKco0sAVgYGTBnHUb0tY9JQzJ/nPDiv/8PIyz69wl1AibeCDZOLVVI+6156dPfHmJH7ws5oUJRiW4ZmAvuuA==",
+      "type": "package",
+      "path": "microsoft.extensions.objectpool/7.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.Extensions.ObjectPool.dll",
+        "lib/net462/Microsoft.Extensions.ObjectPool.xml",
+        "lib/net7.0/Microsoft.Extensions.ObjectPool.dll",
+        "lib/net7.0/Microsoft.Extensions.ObjectPool.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.xml",
+        "microsoft.extensions.objectpool.7.0.0.nupkg.sha512",
+        "microsoft.extensions.objectpool.nuspec"
       ]
     },
     "Microsoft.Extensions.Options/9.0.4": {
@@ -2824,6 +2926,42 @@
         "npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
         "npgsql.entityframeworkcore.postgresql.nuspec",
         "postgresql.png"
+      ]
+    },
+    "prometheus-net/8.2.1": {
+      "sha512": "3wVgdEPOCBF752s2xps5T+VH+c9mJK8S8GKEDg49084P6JZMumTZI5Te6aJ9MQpX0sx7om6JOnBpIi7ZBmmiDQ==",
+      "type": "package",
+      "path": "prometheus-net/8.2.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net462/Prometheus.NetStandard.dll",
+        "lib/net462/Prometheus.NetStandard.xml",
+        "lib/net6.0/Prometheus.NetStandard.dll",
+        "lib/net6.0/Prometheus.NetStandard.xml",
+        "lib/net7.0/Prometheus.NetStandard.dll",
+        "lib/net7.0/Prometheus.NetStandard.xml",
+        "lib/netstandard2.0/Prometheus.NetStandard.dll",
+        "lib/netstandard2.0/Prometheus.NetStandard.xml",
+        "prometheus-net-logo.png",
+        "prometheus-net.8.2.1.nupkg.sha512",
+        "prometheus-net.nuspec"
+      ]
+    },
+    "prometheus-net.AspNetCore/8.2.1": {
+      "sha512": "/4TfTvbwIDqpaKTiWvEsjUywiHYF9zZvGZF5sK15avoDsUO/WPQbKsF8TiMaesuphdFQPK2z52P0zk6j26V0rQ==",
+      "type": "package",
+      "path": "prometheus-net.aspnetcore/8.2.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net6.0/Prometheus.AspNetCore.dll",
+        "lib/net6.0/Prometheus.AspNetCore.xml",
+        "prometheus-net-logo.png",
+        "prometheus-net.aspnetcore.8.2.1.nupkg.sha512",
+        "prometheus-net.aspnetcore.nuspec"
       ]
     },
     "RabbitMQ.Client/6.4.0": {
@@ -3422,28 +3560,36 @@
       "Microsoft.EntityFrameworkCore.Design >= 9.0.4",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
       "RabbitMQ.Client >= 6.4.0",
-      "Swashbuckle.AspNetCore >= 6.6.2"
+      "Swashbuckle.AspNetCore >= 6.6.2",
+      "prometheus-net.AspNetCore >= 8.2.1"
     ]
   },
   "packageFolders": {
-    "/Users/nigar/.nuget/packages/": {}
+    "C:\\Users\\MahsunDağAtolla\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
+      "projectUniqueName": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj",
       "projectName": "nigar-payment-service",
-      "projectPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/nigar-payment-service.csproj",
-      "packagesPath": "/Users/nigar/.nuget/packages/",
-      "outputPath": "/Users/nigar/Desktop/HotelBookingSystem/HotelBookingSystem/nigar-payment-service/obj/",
+      "projectPath": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\nigar-payment-service.csproj",
+      "packagesPath": "C:\\Users\\MahsunDağAtolla\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\MahsunDağAtolla\\Desktop\\SchoolProjects\\HotelBooking\\HotelBookingSystem\\nigar-payment-service\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "/Users/nigar/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\MahsunDağAtolla\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3461,7 +3607,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -3488,6 +3635,10 @@
           "Swashbuckle.AspNetCore": {
             "target": "Package",
             "version": "[6.6.2, )"
+          },
+          "prometheus-net.AspNetCore": {
+            "target": "Package",
+            "version": "[8.2.1, )"
           }
         },
         "imports": [
@@ -3509,7 +3660,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

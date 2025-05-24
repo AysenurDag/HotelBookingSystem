@@ -1,22 +1,24 @@
+# hotel_service.py veya main.py
 from flask import Flask
 from config import config
 from database import init_db
 from flask_restx import Api
 from flask_cors import CORS
-from api.routes import setup_routes  # sadece setup_routes al
+from api.routes import setup_routes
 from flask import Blueprint
+from prometheus_flask_exporter import PrometheusMetrics
+
 
 def create_app(config_name='default'):
     app = Flask(__name__)
     CORS(app)
     app.config.from_object(config[config_name])
+    metrics = PrometheusMetrics(app)
 
     init_db(app)
 
-    # 1. Blueprint'i burada oluştur
+    # Blueprint işlemleri
     api_blueprint = Blueprint('api', __name__)
-
-    # 2. API nesnesi Blueprint'e bağlanır
     api = Api(
         api_blueprint,
         version='1.0',
@@ -24,11 +26,13 @@ def create_app(config_name='default'):
         description='Hotel service swagger API',
         doc='/'
     )
-
-    # 3. Rotaları blueprint'e ekle
     setup_routes(api, api_blueprint)
-
-    # 4. Blueprint'i en son Flask'a ekle
     app.register_blueprint(api_blueprint)
 
     return app
+
+
+# 🔥 BURASI EN SONDA OLMALI
+if __name__ == '__main__':
+    app = create_app()
+    app.run(host='0.0.0.0', port=5050)

@@ -4,6 +4,7 @@ using nigar_payment_service.DbContext;
 using nigar_payment_service.Gateways;
 using nigar_payment_service.Services;
 using RabbitMQ.Client;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,7 +71,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseHttpMetrics(); 
 app.MapControllers();
 app.MapGet("/", () => "💳 Payment Service is running!");
-
+app.MapMetrics(); 
 app.Run();

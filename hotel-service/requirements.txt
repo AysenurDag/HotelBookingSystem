@@ -6,3 +6,4 @@ python-dotenv==1.0.0
 flask-restx==1.1.0
 werkzeug==2.3.7
 flask-cors==4.0.0
+prometheus-flask-exporter==0.22.4
